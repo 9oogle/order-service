@@ -42,7 +42,7 @@ public class OrderItem extends BaseAudit {
   @Column(name = "status", nullable = false, length = 20)
   private OrderItemStatus status = OrderItemStatus.ACTIVE;
 
-  public static OrderItem create(Product product, Instructor instructor) {
+  static OrderItem create(Product product, Instructor instructor) {
     OrderItem item = new OrderItem();
     item.product = product;
     item.instructor = instructor;
@@ -56,7 +56,7 @@ public class OrderItem extends BaseAudit {
     this.order = order;
   }
 
-  public void cancel() {
+  void cancel() {
     if (this.status == OrderItemStatus.CANCELED) {
       throw new BadRequestException("이미 취소된 주문 상품입니다.");
     }
