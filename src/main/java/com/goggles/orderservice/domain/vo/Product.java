@@ -1,5 +1,6 @@
 package com.goggles.orderservice.domain.vo;
 
+import com.goggles.common.exception.BadRequestException;
 import com.goggles.orderservice.domain.enums.OrderItemType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -42,19 +43,19 @@ public class Product {
   private static void validate(
       UUID productId, String productName, BigDecimal productPrice, OrderItemType productType) {
     if (productId == null) {
-      throw new IllegalArgumentException("productId 값은 필수입니다.");
+      throw new BadRequestException("productId 값은 필수입니다.");
     }
     if (productName == null || productName.isBlank()) {
-      throw new IllegalArgumentException("productName 값은 필수입니다.");
+      throw new BadRequestException("productName 값은 필수입니다.");
     }
     if (productPrice == null) {
-      throw new IllegalArgumentException("price 값은 필수입니다.");
+      throw new BadRequestException("price 값은 필수입니다.");
     }
     if (productPrice.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException("productPrice 0 미만일 수 없습니다.");
+      throw new BadRequestException("productPrice 0 미만일 수 없습니다.");
     }
     if (productType == null) {
-      throw new IllegalArgumentException("productType 값은 필수입니다.");
+      throw new BadRequestException("productType 값은 필수입니다.");
     }
   }
 }
