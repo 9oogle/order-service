@@ -20,12 +20,14 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_order_item")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("deleted_at IS NULL")
 public class OrderItem extends BaseAudit {
 
   @Id @GeneratedValue @UuidGenerator private UUID id;
