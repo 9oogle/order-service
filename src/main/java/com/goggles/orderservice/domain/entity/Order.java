@@ -22,6 +22,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -48,8 +49,13 @@ public class Order extends BaseAudit {
   @Column(name = "status", nullable = false, length = 20)
   private OrderStatus status = OrderStatus.PAYMENT_PENDING;
 
+  @Getter(AccessLevel.NONE)
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> items = new ArrayList<>();
+
+  public List<OrderItem> getItems() {
+    return List.copyOf(items);
+  }
 
   public static Order create(
       Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItem> items) {
@@ -67,8 +73,8 @@ public class Order extends BaseAudit {
   }
 
   public void pay(String paymentKey, String paymentName) {
-    transitionTo(OrderStatus.PAID);
     this.payment = new Payment(paymentKey, paymentName);
+    transitionTo(OrderStatus.PAID);
   }
 
   public void complete() {
@@ -130,6 +136,10 @@ public class Order extends BaseAudit {
   private static void validateItems(List<OrderItem> items) {
     if (items == null || items.isEmpty()) {
       throw new BadRequestException("주문 상품은 최소 1개 이상이어야 합니다.");
+    }
+
+    if (items.stream().anyMatch(Objects::isNull)) {
+      throw new BadRequestException("주문 상품에 null 값이 포함될 수 없습니다.");
     }
   }
 }
