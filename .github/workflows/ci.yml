@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [ "dev" ]
+    branches: ["dev"]
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -25,3 +25,6 @@ jobs:
 
       - name: Build and test
         run: ./gradlew clean build
+        env:
+          GitHubPackagesUsername: ${{ secrets.PACKAGES_USERNAME }}
+          GitHubPackagesPassword: ${{ secrets.PACKAGES_PASSWORD }}
