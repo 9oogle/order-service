@@ -40,11 +40,7 @@ public class Product {
   }
 
   private static void validate(
-      UUID productId,
-      String productName,
-      BigDecimal productPrice,
-      OrderItemType productType
-  ) {
+      UUID productId, String productName, BigDecimal productPrice, OrderItemType productType) {
     if (productId == null) {
       throw new IllegalArgumentException("productId 값은 필수입니다.");
     }

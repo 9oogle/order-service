@@ -6,5 +6,4 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderRepositoryImpl implements OrderRepository {
   private final OrderJpaRepository orderJpaRepository;
-
 }

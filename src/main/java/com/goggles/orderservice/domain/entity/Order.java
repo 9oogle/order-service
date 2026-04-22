@@ -34,22 +34,15 @@ import org.hibernate.annotations.UuidGenerator;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseAudit {
 
-  @Id
-  @GeneratedValue
-  @UuidGenerator
-  private UUID id;
+  @Id @GeneratedValue @UuidGenerator private UUID id;
 
-  @Embedded
-  private Orderer orderer;
+  @Embedded private Orderer orderer;
 
-  @Embedded
-  private Coupon coupon;
+  @Embedded private Coupon coupon;
 
-  @Embedded
-  private OrderPrice price;
+  @Embedded private OrderPrice price;
 
-  @Embedded
-  private Payment payment;
+  @Embedded private Payment payment;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
@@ -58,13 +51,8 @@ public class Order extends BaseAudit {
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> items = new ArrayList<>();
 
-
   public static Order create(
-      Orderer orderer,
-      Coupon coupon,
-      OrderPrice price,
-      List<OrderItem> items
-  ) {
+      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItem> items) {
     validateItems(items);
     Order order = new Order();
     order.orderer = orderer;
@@ -96,15 +84,15 @@ public class Order extends BaseAudit {
   }
 
   public void cancelItem(UUID itemId) {
-    OrderItem item = items.stream()
-        .filter(i -> i.getId().equals(itemId))
-        .findFirst()
-        .orElseThrow(() -> new NotFoundException("존재하지 않는 주문 상품입니다: " + itemId));
+    OrderItem item =
+        items.stream()
+            .filter(i -> i.getId().equals(itemId))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("존재하지 않는 주문 상품입니다: " + itemId));
 
     item.cancel();
 
-    boolean allCanceled = items.stream()
-        .allMatch(i -> i.getStatus() == OrderItemStatus.CANCELED);
+    boolean allCanceled = items.stream().allMatch(i -> i.getStatus() == OrderItemStatus.CANCELED);
 
     if (allCanceled) {
       transitionTo(OrderStatus.CANCELED);
@@ -114,24 +102,25 @@ public class Order extends BaseAudit {
   private void transitionTo(OrderStatus next) {
     if (!this.status.canTransitionTo(next)) {
       throw new BadRequestException(
-          String.format("주문 상태를 %s에서 %s로 변경할 수 없습니다.", this.status, next)
-      );
+          String.format("주문 상태를 %s에서 %s로 변경할 수 없습니다.", this.status, next));
     }
     this.status = next;
   }
 
-
   private void addItem(OrderItem item) {
-    boolean duplicated = this.items.stream()
-        .anyMatch(
-            i -> i.getProduct().getProductId().equals(item.getProduct().getProductId())
-            && i.getProduct().getProductType() == item.getProduct().getProductType());
+    boolean duplicated =
+        this.items.stream()
+            .anyMatch(
+                i ->
+                    i.getProduct().getProductId().equals(item.getProduct().getProductId())
+                        && i.getProduct().getProductType() == item.getProduct().getProductType());
 
     if (duplicated) {
       throw new ConflictException(
-          "동일한 상품이 이미 주문에 존재합니다: productType=" + item.getProduct().getProductType()
-              + ", productId=" + item.getProduct().getProductId()
-      );
+          "동일한 상품이 이미 주문에 존재합니다: productType="
+              + item.getProduct().getProductType()
+              + ", productId="
+              + item.getProduct().getProductId());
     }
 
     this.items.add(item);

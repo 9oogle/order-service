@@ -24,7 +24,6 @@ public class Coupon {
   @Column(name = "coupon_discount_rate", precision = 5, scale = 2)
   private BigDecimal couponDiscountRate;
 
-
   public Coupon(UUID couponId, String couponName, BigDecimal couponDiscountRate) {
     validate(couponId, couponName, couponDiscountRate);
     this.couponId = couponId;
@@ -44,5 +43,4 @@ public class Coupon {
       throw new BadRequestException("쿠폰이 존재할 경우 couponDiscountRate도 필수입니다.");
     }
   }
-
 }

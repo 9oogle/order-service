@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum OrderStatus {
-
   PAYMENT_PENDING {
     @Override
     public Set<OrderStatus> allowedTransitions() {

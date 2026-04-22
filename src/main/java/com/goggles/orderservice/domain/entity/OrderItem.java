@@ -28,28 +28,21 @@ import org.hibernate.annotations.UuidGenerator;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItem extends BaseAudit {
 
-  @Id
-  @GeneratedValue
-  @UuidGenerator
-  private UUID id;
+  @Id @GeneratedValue @UuidGenerator private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id", nullable = false, updatable = false)
   private Order order;
 
-  @Embedded
-  private Product product;
+  @Embedded private Product product;
 
-  @Embedded
-  private Instructor instructor;
+  @Embedded private Instructor instructor;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
   private OrderItemStatus status = OrderItemStatus.ACTIVE;
 
-  public static OrderItem create(
-      Product product, Instructor instructor
-  ) {
+  public static OrderItem create(Product product, Instructor instructor) {
     OrderItem item = new OrderItem();
     item.product = product;
     item.instructor = instructor;
