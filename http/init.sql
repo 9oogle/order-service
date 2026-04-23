@@ -32,21 +32,22 @@ DO $$
 
                 v_discount := CASE WHEN random() > 0.5 THEN (v_total_price * 0.1)::bigint ELSE 0 END;
 
-                INSERT INTO p_order (
+                INSERT INTO order_db.p_order (
                     id, student_id, student_name, original_price, discount_amount, final_price,
                     status, created_at, updated_at, created_by, updated_by,
-                    coupon_discount_rate, coupon_name, coupon_code
+                    coupon_id, coupon_discount_rate, coupon_name, coupon_code
                 ) VALUES (
                              v_order_id, user_ids[v_user_idx], user_names[v_user_idx], v_total_price, v_discount, v_total_price - v_discount,
                              (ARRAY['PAYMENT_PENDING', 'PAID', 'COMPLETED', 'CANCELED'])[floor(random()*4)+1],
                              now(), now(), user_ids[v_user_idx], user_ids[v_user_idx],
-                             CASE WHEN v_discount > 0 THEN 10.00 ELSE 0 END,
+                             CASE WHEN v_discount > 0 THEN gen_random_uuid() ELSE NULL END, -- coupon_id 추가
+                             CASE WHEN v_discount > 0 THEN 10.00 ELSE NULL END,             -- 0 대신 NULL 처리
                              CASE WHEN v_discount > 0 THEN '신규 가입 감사 쿠폰' ELSE NULL END,
                              CASE WHEN v_discount > 0 THEN 'WELCOME_2026' ELSE NULL END
                          );
 
                 FOR j IN 1..v_item_count LOOP
-                        INSERT INTO p_order_item (
+                        INSERT INTO order_db.p_order_item (
                             id, order_id, product_id, instructor_id, instructor_name,
                             product_name, product_price, product_type, status,
                             created_at, updated_at, created_by, updated_by
