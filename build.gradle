@@ -44,6 +44,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.testcontainers:postgresql'
+	testImplementation 'org.mockito:mockito-core'
+	testImplementation 'net.bytebuddy:byte-buddy-agent'
 }
 
 dependencyManagement {
@@ -61,5 +63,9 @@ spotless {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.withType(Test).configureEach {
+	jvmArgs "-javaagent:${configurations.testRuntimeClasspath.find { it.name.contains('byte-buddy-agent') }}"
 }
 
