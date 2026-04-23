@@ -4,7 +4,6 @@ import com.goggles.common.domain.BaseAudit;
 import com.goggles.common.exception.BadRequestException;
 import com.goggles.common.exception.ConflictException;
 import com.goggles.common.exception.NotFoundException;
-import com.goggles.orderservice.application.dto.command.CreateOrderItemCommand;
 import com.goggles.orderservice.domain.enums.OrderItemStatus;
 import com.goggles.orderservice.domain.enums.OrderStatus;
 import com.goggles.orderservice.domain.vo.Coupon;

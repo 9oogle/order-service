@@ -58,11 +58,10 @@ public class OrderQueryTest {
             new Orderer(userId, "신혜원"),
             null,
             new OrderPrice(110000L, 15000L),
-            List.of(Order.createItem(
-                new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.COURSE),
-                new Instructor(UUID.randomUUID(), "강사명"))
-            )
-        );
+            List.of(
+                Order.createItem(
+                    new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.COURSE),
+                    new Instructor(UUID.randomUUID(), "강사명"))));
 
     orderId = order.getId();
   }

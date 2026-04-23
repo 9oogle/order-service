@@ -1,7 +1,6 @@
 package com.goggles.orderservice.presentation.dto;
 
 import com.goggles.orderservice.application.dto.result.OrderListResult;
-import com.goggles.orderservice.domain.enums.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
