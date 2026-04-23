@@ -20,8 +20,10 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 
   @Override
   public OrderDetailResult getOrderDetails(UUID orderId, UUID userId) {
-    Order order = orderRepository.getOrderByIdAndUserId(orderId, userId)
-        .orElseThrow(() -> new NotFoundException("주문을 찾을 수 없습니다."));
+    Order order =
+        orderRepository
+            .getOrderByIdAndUserId(orderId, userId)
+            .orElseThrow(() -> new NotFoundException("주문을 찾을 수 없습니다."));
 
     return OrderDetailResult.from(order);
   }

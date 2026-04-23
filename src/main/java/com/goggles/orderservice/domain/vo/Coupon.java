@@ -27,7 +27,8 @@ public class Coupon {
   @Column(name = "coupon_discount_rate", precision = 5, scale = 2)
   private BigDecimal couponDiscountRate;
 
-  public Coupon(UUID couponId, String couponCode, String couponName, BigDecimal couponDiscountRate) {
+  public Coupon(
+      UUID couponId, String couponCode, String couponName, BigDecimal couponDiscountRate) {
     validate(couponId, couponCode, couponName, couponDiscountRate);
     this.couponId = couponId;
     this.couponCode = couponCode;
@@ -35,7 +36,8 @@ public class Coupon {
     this.couponDiscountRate = couponDiscountRate;
   }
 
-  private static void validate(UUID couponId, String couponCode, String couponName, BigDecimal couponDiscountRate) {
+  private static void validate(
+      UUID couponId, String couponCode, String couponName, BigDecimal couponDiscountRate) {
     boolean hasId = couponId != null;
     boolean hasCode = couponCode != null && !couponCode.isBlank();
     boolean hasName = couponName != null && !couponName.isBlank();

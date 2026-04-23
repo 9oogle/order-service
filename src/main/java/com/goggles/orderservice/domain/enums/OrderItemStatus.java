@@ -4,13 +4,13 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum OrderItemStatus {
-  ACTIVE{
+  ACTIVE {
     @Override
     public Set<OrderItemStatus> allowedTransitions() {
       return EnumSet.of(CANCELED);
     }
   },
-  CANCELED{
+  CANCELED {
     @Override
     public Set<OrderItemStatus> allowedTransitions() {
       return EnumSet.noneOf(OrderItemStatus.class);

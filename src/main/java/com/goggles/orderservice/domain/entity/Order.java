@@ -63,9 +63,10 @@ public class Order extends BaseAudit {
   public static Order create(
       Orderer orderer, Coupon coupon, OrderPrice price, List<CreateOrderItemCommand> itemCommands) {
 
-    List<OrderItem> items = itemCommands.stream()
-        .map(cmd -> OrderItem.create(cmd.product(), cmd.instructor()))
-        .toList();
+    List<OrderItem> items =
+        itemCommands.stream()
+            .map(cmd -> OrderItem.create(cmd.product(), cmd.instructor()))
+            .toList();
 
     validateItems(items);
     Order order = new Order();

@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface OrderQueryService {
   OrderDetailResult getOrderDetails(UUID orderId, UUID userId);
+
   OrderListResult getOrders(OrderListQuery orderListQuery);
 }

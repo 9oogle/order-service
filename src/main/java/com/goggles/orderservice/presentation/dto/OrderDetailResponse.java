@@ -20,8 +20,7 @@ public record OrderDetailResponse(
     String paymentName,
     LocalDateTime orderDate,
     String orderStatus,
-    List<OrderItemSummaryResponse> orderItems
-) {
+    List<OrderItemSummaryResponse> orderItems) {
   public static OrderDetailResponse from(OrderDetailResult result) {
     return new OrderDetailResponse(
         result.orderId(),
@@ -37,9 +36,6 @@ public record OrderDetailResponse(
         result.payment() != null ? result.payment().getPaymentName() : null,
         result.createdAt(),
         result.status().name(),
-        result.orderItems().stream()
-            .map(OrderItemSummaryResponse::from)
-            .toList()
-    );
+        result.orderItems().stream().map(OrderItemSummaryResponse::from).toList());
   }
 }

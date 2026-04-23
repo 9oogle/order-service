@@ -18,8 +18,7 @@ public record OrderDetailResult(
     Payment payment,
     LocalDateTime createdAt,
     OrderStatus status,
-    List<OrderItemSummary> orderItems
-) {
+    List<OrderItemSummary> orderItems) {
   public static OrderDetailResult from(Order order) {
     return new OrderDetailResult(
         order.getId(),
@@ -29,9 +28,6 @@ public record OrderDetailResult(
         order.getPayment(),
         order.getCreatedAt(),
         order.getStatus(),
-        order.getItems().stream()
-            .map(OrderItemSummary::from)
-            .toList()
-    );
+        order.getItems().stream().map(OrderItemSummary::from).toList());
   }
 }

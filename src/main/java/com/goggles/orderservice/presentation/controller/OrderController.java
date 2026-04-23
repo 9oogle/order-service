@@ -29,8 +29,7 @@ public class OrderController {
 
   @GetMapping("/{orderId}")
   public OrderDetailResponse getOrderDetails(
-      @PathVariable("orderId") UUID orderId, @RequestHeader("X-User-Id") UUID userId
-  ) {
+      @PathVariable("orderId") UUID orderId, @RequestHeader("X-User-Id") UUID userId) {
     return OrderDetailResponse.from(orderQueryService.getOrderDetails(orderId, userId));
   }
 }

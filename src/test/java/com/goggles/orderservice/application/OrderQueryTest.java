@@ -2,9 +2,9 @@ package com.goggles.orderservice.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.goggles.common.exception.NotFoundException;
 import com.goggles.orderservice.application.dto.command.CreateOrderItemCommand;
@@ -35,11 +35,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 public class OrderQueryTest {
-  @InjectMocks
-  private OrderQueryServiceImpl orderQueryServiceImpl;
+  @InjectMocks private OrderQueryServiceImpl orderQueryServiceImpl;
 
-  @Mock
-  private OrderRepository orderRepository;
+  @Mock private OrderRepository orderRepository;
 
   private UUID orderId;
   private UUID userId;
@@ -49,19 +47,15 @@ public class OrderQueryTest {
   void setUp() {
     userId = UUID.randomUUID();
 
-    List<CreateOrderItemCommand> itemCommands = List.of(
-        new CreateOrderItemCommand(
-            new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.COURSE),
-            new Instructor(UUID.randomUUID(), "강사명")
-        )
-    );
+    List<CreateOrderItemCommand> itemCommands =
+        List.of(
+            new CreateOrderItemCommand(
+                new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.COURSE),
+                new Instructor(UUID.randomUUID(), "강사명")));
 
-    order = Order.create(
-        new Orderer(userId, "신혜원"),
-        null,
-        new OrderPrice(110000L, 15000L),
-        itemCommands
-    );
+    order =
+        Order.create(
+            new Orderer(userId, "신혜원"), null, new OrderPrice(110000L, 15000L), itemCommands);
 
     orderId = order.getId();
   }
@@ -73,8 +67,7 @@ public class OrderQueryTest {
     @DisplayName("성공: 주문 상세 조회(유저 아이디)")
     void getOrderDetails_success() {
       // given
-      when(orderRepository.getOrderByIdAndUserId(orderId, userId))
-          .thenReturn(Optional.of(order));
+      when(orderRepository.getOrderByIdAndUserId(orderId, userId)).thenReturn(Optional.of(order));
 
       // when
       OrderDetailResult result = orderQueryServiceImpl.getOrderDetails(orderId, userId);
@@ -97,8 +90,7 @@ public class OrderQueryTest {
     @DisplayName("실패: 주문을 찾을 수 없음")
     void getOrderDetails_notFound() {
       // given
-      when(orderRepository.getOrderByIdAndUserId(orderId, userId))
-          .thenReturn(Optional.empty());
+      when(orderRepository.getOrderByIdAndUserId(orderId, userId)).thenReturn(Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> orderQueryServiceImpl.getOrderDetails(orderId, userId))
