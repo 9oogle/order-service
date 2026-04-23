@@ -1,0 +1,33 @@
+package com.goggles.orderservice.application.service.impl;
+
+import com.goggles.common.exception.NotFoundException;
+import com.goggles.orderservice.application.dto.query.OrderListQuery;
+import com.goggles.orderservice.application.dto.result.OrderDetailResult;
+import com.goggles.orderservice.application.dto.result.OrderListResult;
+import com.goggles.orderservice.application.service.OrderQueryService;
+import com.goggles.orderservice.domain.entity.Order;
+import com.goggles.orderservice.domain.repository.OrderRepository;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class OrderQueryServiceImpl implements OrderQueryService {
+  private final OrderRepository orderRepository;
+
+  @Override
+  public OrderDetailResult getOrderDetails(UUID orderId, UUID userId) {
+    Order order = orderRepository.getOrderByIdAndUserId(orderId, userId)
+        .orElseThrow(() -> new NotFoundException("주문을 찾을 수 없습니다."));
+
+    return OrderDetailResult.from(order);
+  }
+
+  @Override
+  public OrderListResult getOrders(OrderListQuery orderListQuery) {
+    return null;
+  }
+}

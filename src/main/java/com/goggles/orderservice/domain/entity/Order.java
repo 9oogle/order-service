@@ -41,11 +41,11 @@ public class Order extends BaseAudit {
 
   @Embedded private Orderer orderer;
 
-  @Embedded private Coupon coupon;
+  @Embedded private Coupon coupon = null;
 
   @Embedded private OrderPrice price;
 
-  @Embedded private Payment payment;
+  @Embedded private Payment payment = null;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
