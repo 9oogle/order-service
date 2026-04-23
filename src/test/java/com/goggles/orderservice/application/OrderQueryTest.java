@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.goggles.common.exception.NotFoundException;
-import com.goggles.orderservice.application.dto.command.CreateOrderItemCommand;
 import com.goggles.orderservice.application.dto.result.OrderDetailResult;
 import com.goggles.orderservice.application.dto.result.OrderItemSummary;
 import com.goggles.orderservice.application.service.impl.OrderQueryServiceImpl;
@@ -31,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -47,12 +47,6 @@ public class OrderQueryTest {
   void setUp() {
     userId = UUID.randomUUID();
 
-    List<CreateOrderItemCommand> itemCommands =
-        List.of(
-            new CreateOrderItemCommand(
-                new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.COURSE),
-                new Instructor(UUID.randomUUID(), "강사명")));
-
     order =
         Order.create(
             new Orderer(userId, "신혜원"),
@@ -63,6 +57,7 @@ public class OrderQueryTest {
                     new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.COURSE),
                     new Instructor(UUID.randomUUID(), "강사명"))));
 
+    ReflectionTestUtils.setField(order, "id", UUID.randomUUID());
     orderId = order.getId();
   }
 

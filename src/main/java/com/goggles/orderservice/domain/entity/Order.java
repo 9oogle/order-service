@@ -39,7 +39,7 @@ import org.hibernate.annotations.UuidGenerator;
 @SQLRestriction("deleted_at IS NULL")
 public class Order extends BaseAudit {
 
-  @Id @GeneratedValue @UuidGenerator private UUID id = UUID.randomUUID();
+  @Id @GeneratedValue @UuidGenerator private UUID id;
 
   @Embedded private Orderer orderer;
 

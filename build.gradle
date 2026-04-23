@@ -45,7 +45,7 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.testcontainers:postgresql'
 	testImplementation 'org.mockito:mockito-core'
-	testImplementation 'net.bytebuddy:byte-buddy-agent'
+	testRuntimeOnly  'net.bytebuddy:byte-buddy-agent'
 }
 
 dependencyManagement {
@@ -66,6 +66,10 @@ tasks.named('test') {
 }
 
 tasks.withType(Test).configureEach {
-	jvmArgs "-javaagent:${configurations.testRuntimeClasspath.find { it.name.contains('byte-buddy-agent') }}"
+	def byteBuddyAgent = configurations.testRuntimeClasspath.files.find { it.name.startsWith('byte-buddy-agent-') }
+		if (byteBuddyAgent == null) {
+			throw new GradleException("byte-buddy-agent를 testRuntimeClasspath에서 찾을 수 없습니다.")
+		}
+	jvmArgs "-javaagent:${byteBuddyAgent.absolutePath}"
 }
 

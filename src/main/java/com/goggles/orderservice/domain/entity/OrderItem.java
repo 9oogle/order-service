@@ -30,7 +30,7 @@ import org.hibernate.annotations.UuidGenerator;
 @SQLRestriction("deleted_at IS NULL")
 public class OrderItem extends BaseAudit {
 
-  @Id @GeneratedValue @UuidGenerator private UUID id = UUID.randomUUID();
+  @Id @GeneratedValue @UuidGenerator private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id", nullable = false, updatable = false)
