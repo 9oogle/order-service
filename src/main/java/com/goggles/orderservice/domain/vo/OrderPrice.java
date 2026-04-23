@@ -40,7 +40,7 @@ public class OrderPrice {
     if (discountAmount < 0) {
       throw new BadRequestException("discountAmount는 0 미만일 수 없습니다.");
     }
-    if (discountAmount > 0) {
+    if (discountAmount.compareTo(originalPrice) > 0) {
       throw new BadRequestException("discountAmount는 originalPrice를 초과할 수 없습니다.");
     }
   }
