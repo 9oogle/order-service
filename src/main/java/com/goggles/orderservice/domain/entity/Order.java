@@ -8,9 +8,11 @@ import com.goggles.orderservice.application.dto.command.CreateOrderItemCommand;
 import com.goggles.orderservice.domain.enums.OrderItemStatus;
 import com.goggles.orderservice.domain.enums.OrderStatus;
 import com.goggles.orderservice.domain.vo.Coupon;
+import com.goggles.orderservice.domain.vo.Instructor;
 import com.goggles.orderservice.domain.vo.OrderPrice;
 import com.goggles.orderservice.domain.vo.Orderer;
 import com.goggles.orderservice.domain.vo.Payment;
+import com.goggles.orderservice.domain.vo.Product;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -38,7 +40,7 @@ import org.hibernate.annotations.UuidGenerator;
 @SQLRestriction("deleted_at IS NULL")
 public class Order extends BaseAudit {
 
-  @Id @GeneratedValue @UuidGenerator private UUID id;
+  @Id @GeneratedValue @UuidGenerator private UUID id = UUID.randomUUID();
 
   @Embedded private Orderer orderer;
 
@@ -61,13 +63,7 @@ public class Order extends BaseAudit {
   }
 
   public static Order create(
-      Orderer orderer, Coupon coupon, OrderPrice price, List<CreateOrderItemCommand> itemCommands) {
-
-    List<OrderItem> items =
-        itemCommands.stream()
-            .map(cmd -> OrderItem.create(cmd.product(), cmd.instructor()))
-            .toList();
-
+      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItem> items) {
     validateItems(items);
     Order order = new Order();
     order.orderer = orderer;
@@ -79,6 +75,10 @@ public class Order extends BaseAudit {
     }
 
     return order;
+  }
+
+  public static OrderItem createItem(Product product, Instructor instructor) {
+    return OrderItem.create(product, instructor);
   }
 
   public void pay(String paymentKey, String paymentName) {

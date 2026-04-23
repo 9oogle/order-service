@@ -11,7 +11,7 @@ public record OrderListResponse(
     Long originalPrice,
     Long finalPrice,
     LocalDateTime createdAt,
-    OrderStatus status,
+    String orderStatus,
     List<OrderItemSummaryResponse> orderItems) {
   public static OrderListResponse from(OrderListResult result) {
     return new OrderListResponse(
@@ -19,7 +19,7 @@ public record OrderListResponse(
         result.price().getOriginalPrice(),
         result.price().getFinalPrice(),
         result.createdAt(),
-        result.status(),
+        result.status().name(),
         result.orderItems().stream().map(OrderItemSummaryResponse::from).toList());
   }
 }
