@@ -4,6 +4,7 @@ import com.goggles.common.domain.BaseAudit;
 import com.goggles.common.exception.BadRequestException;
 import com.goggles.common.exception.ConflictException;
 import com.goggles.common.exception.NotFoundException;
+import com.goggles.orderservice.application.dto.command.CreateOrderItemCommand;
 import com.goggles.orderservice.domain.enums.OrderItemStatus;
 import com.goggles.orderservice.domain.enums.OrderStatus;
 import com.goggles.orderservice.domain.vo.Coupon;
@@ -60,7 +61,12 @@ public class Order extends BaseAudit {
   }
 
   public static Order create(
-      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItem> items) {
+      Orderer orderer, Coupon coupon, OrderPrice price, List<CreateOrderItemCommand> itemCommands) {
+
+    List<OrderItem> items = itemCommands.stream()
+        .map(cmd -> OrderItem.create(cmd.product(), cmd.instructor()))
+        .toList();
+
     validateItems(items);
     Order order = new Order();
     order.orderer = orderer;
