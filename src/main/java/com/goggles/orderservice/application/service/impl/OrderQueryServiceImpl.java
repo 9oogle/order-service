@@ -7,8 +7,10 @@ import com.goggles.orderservice.application.dto.result.OrderListResult;
 import com.goggles.orderservice.application.service.OrderQueryService;
 import com.goggles.orderservice.domain.entity.Order;
 import com.goggles.orderservice.domain.repository.OrderRepository;
+import com.goggles.orderservice.infrastructure.repository.custom.OrderCustomRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class OrderQueryServiceImpl implements OrderQueryService {
   private final OrderRepository orderRepository;
+  private final OrderCustomRepository orderCustomRepository;
 
   @Override
   public OrderDetailResult getOrderDetails(UUID orderId, UUID userId) {
@@ -29,7 +32,8 @@ public class OrderQueryServiceImpl implements OrderQueryService {
   }
 
   @Override
-  public OrderListResult getOrders(OrderListQuery orderListQuery) {
-    return null;
+  public Page<OrderListResult> getOrders(OrderListQuery orderListQuery) {
+    Page<Order> orderPage = orderCustomRepository.getOrderPage(orderListQuery);
+    return orderPage.map(OrderListResult::from);
   }
 }

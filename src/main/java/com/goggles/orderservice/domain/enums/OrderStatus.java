@@ -1,5 +1,6 @@
 package com.goggles.orderservice.domain.enums;
 
+import com.goggles.common.exception.BadRequestException;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -39,5 +40,14 @@ public enum OrderStatus {
 
   public boolean canTransitionTo(OrderStatus next) {
     return allowedTransitions().contains(next);
+  }
+
+  public static OrderStatus from(String value) {
+    if (value == null) return null;
+    try {
+      return OrderStatus.valueOf(value.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestException("유효하지 않은 주문 상태입니다: " + value);
+    }
   }
 }
