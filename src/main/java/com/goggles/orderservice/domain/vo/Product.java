@@ -6,7 +6,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -25,14 +24,13 @@ public class Product {
   private String productName;
 
   @Column(name = "product_price", nullable = false)
-  private BigDecimal productPrice;
+  private Long productPrice;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "product_type", nullable = false, length = 20)
   private OrderItemType productType;
 
-  public Product(
-      UUID productId, String productName, BigDecimal productPrice, OrderItemType productType) {
+  public Product(UUID productId, String productName, Long productPrice, OrderItemType productType) {
     validate(productId, productName, productPrice, productType);
     this.productId = productId;
     this.productName = productName;
@@ -41,7 +39,7 @@ public class Product {
   }
 
   private static void validate(
-      UUID productId, String productName, BigDecimal productPrice, OrderItemType productType) {
+      UUID productId, String productName, Long productPrice, OrderItemType productType) {
     if (productId == null) {
       throw new BadRequestException("productId 값은 필수입니다.");
     }
@@ -51,7 +49,7 @@ public class Product {
     if (productPrice == null) {
       throw new BadRequestException("price 값은 필수입니다.");
     }
-    if (productPrice.compareTo(BigDecimal.ZERO) < 0) {
+    if (productPrice < 0) {
       throw new BadRequestException("productPrice 0 미만일 수 없습니다.");
     }
     if (productType == null) {

@@ -1,0 +1,3 @@
+### 주문 상세 조회
+GET http://{{host}}/api/v1/orders/{{orderId}}
+X-User-Id: {{userId}}

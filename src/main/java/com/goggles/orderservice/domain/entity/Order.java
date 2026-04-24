@@ -7,9 +7,11 @@ import com.goggles.common.exception.NotFoundException;
 import com.goggles.orderservice.domain.enums.OrderItemStatus;
 import com.goggles.orderservice.domain.enums.OrderStatus;
 import com.goggles.orderservice.domain.vo.Coupon;
+import com.goggles.orderservice.domain.vo.Instructor;
 import com.goggles.orderservice.domain.vo.OrderPrice;
 import com.goggles.orderservice.domain.vo.Orderer;
 import com.goggles.orderservice.domain.vo.Payment;
+import com.goggles.orderservice.domain.vo.Product;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -41,11 +43,11 @@ public class Order extends BaseAudit {
 
   @Embedded private Orderer orderer;
 
-  @Embedded private Coupon coupon;
+  @Embedded private Coupon coupon = null;
 
   @Embedded private OrderPrice price;
 
-  @Embedded private Payment payment;
+  @Embedded private Payment payment = null;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
@@ -72,6 +74,10 @@ public class Order extends BaseAudit {
     }
 
     return order;
+  }
+
+  public static OrderItem createItem(Product product, Instructor instructor) {
+    return OrderItem.create(product, instructor);
   }
 
   public void pay(String paymentKey, String paymentName) {
