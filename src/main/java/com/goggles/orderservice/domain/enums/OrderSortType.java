@@ -1,5 +1,6 @@
 package com.goggles.orderservice.domain.enums;
 
+import jakarta.ws.rs.BadRequestException;
 import java.util.Arrays;
 
 public enum OrderSortType {
@@ -19,6 +20,6 @@ public enum OrderSortType {
     return Arrays.stream(values())
         .filter(t -> t.value.equalsIgnoreCase(value))
         .findFirst()
-        .orElse(CREATED_DESC);
+        .orElseThrow(() -> new BadRequestException("유효하지 않은 정렬 조건입니다."));
   }
 }
