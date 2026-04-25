@@ -2,10 +2,10 @@ package com.goggles.orderservice.infrastructure.repository;
 
 import static com.goggles.orderservice.domain.entity.QOrder.order;
 
-import com.goggles.orderservice.application.dto.query.OrderListQuery;
 import com.goggles.orderservice.domain.entity.Order;
 import com.goggles.orderservice.domain.enums.OrderSortType;
 import com.goggles.orderservice.domain.enums.OrderStatus;
+import com.goggles.orderservice.domain.repository.OrderPageQuery;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -24,15 +24,15 @@ public class OrderQueryDslRepository {
 
   private final JPAQueryFactory queryFactory;
 
-  public Page<Order> getOrderPage(OrderListQuery query) {
+  public Page<Order> getOrderPage(OrderPageQuery query) {
     List<Order> content =
         queryFactory
             .selectFrom(order)
             .where(userCondition(query.userId()), statusCondition(query.orderStatus()))
-            .orderBy(orderSpecifier(query.orderSort()))
+            .orderBy(orderSpecifiers(query.orderSort()))
             .orderBy(order.id.desc())
-            .offset((long) query.pageRequest().getPage() * query.pageRequest().getSize())
-            .limit(query.pageRequest().getSize())
+            .offset((long) query.page() * query.size())
+            .limit(query.size())
             .fetch();
 
     Long total =
@@ -42,8 +42,7 @@ public class OrderQueryDslRepository {
             .where(userCondition(query.userId()), statusCondition(query.orderStatus()))
             .fetchOne();
 
-    Pageable pageable =
-        PageRequest.of(query.pageRequest().getPage(), query.pageRequest().getSize());
+    Pageable pageable = PageRequest.of(query.page(), query.size());
 
     return new PageImpl<>(content, pageable, total != null ? total : 0);
   }
@@ -58,13 +57,13 @@ public class OrderQueryDslRepository {
     return order.status.eq(status);
   }
 
-  private OrderSpecifier<?> orderSpecifier(OrderSortType sortType) {
-    if (sortType == null) return order.createdAt.desc();
-    return switch (sortType) {
-      case CREATED_DESC -> order.createdAt.desc();
-      case CREATED_ASC -> order.createdAt.asc();
-      case PRICE_DESC -> order.price.finalPrice.desc();
-      case PRICE_ASC -> order.price.finalPrice.asc();
+  private OrderSpecifier<?>[] orderSpecifiers(OrderSortType sortType) {
+    OrderSortType resolved = sortType == null ? OrderSortType.CREATED_DESC : sortType;
+    return switch (resolved) {
+      case CREATED_DESC -> new OrderSpecifier<?>[] {order.createdAt.desc(), order.id.desc()};
+      case CREATED_ASC -> new OrderSpecifier<?>[] {order.createdAt.asc(), order.id.asc()};
+      case PRICE_DESC -> new OrderSpecifier<?>[] {order.price.finalPrice.desc(), order.id.desc()};
+      case PRICE_ASC -> new OrderSpecifier<?>[] {order.price.finalPrice.asc(), order.id.asc()};
     };
   }
 }

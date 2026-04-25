@@ -6,6 +6,7 @@ import com.goggles.orderservice.application.dto.result.OrderDetailResult;
 import com.goggles.orderservice.application.dto.result.OrderListResult;
 import com.goggles.orderservice.application.service.OrderQueryService;
 import com.goggles.orderservice.domain.entity.Order;
+import com.goggles.orderservice.domain.repository.OrderPageQuery;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 
   @Override
   public Page<OrderListResult> getOrders(OrderListQuery orderListQuery) {
-    Page<Order> orderPage = orderRepository.getOrderPage(orderListQuery);
+    Page<Order> orderPage = orderRepository.getOrderPage(OrderPageQuery.from(orderListQuery));
     return orderPage.map(OrderListResult::from);
   }
 }

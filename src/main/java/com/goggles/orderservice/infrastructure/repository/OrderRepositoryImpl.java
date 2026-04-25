@@ -1,7 +1,7 @@
 package com.goggles.orderservice.infrastructure.repository;
 
-import com.goggles.orderservice.application.dto.query.OrderListQuery;
 import com.goggles.orderservice.domain.entity.Order;
+import com.goggles.orderservice.domain.repository.OrderPageQuery;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class OrderRepositoryImpl implements OrderRepository {
   }
 
   @Override
-  public Page<Order> getOrderPage(OrderListQuery query) {
+  public Page<Order> getOrderPage(OrderPageQuery query) {
     return orderQueryDslRepository.getOrderPage(query);
   }
 }
