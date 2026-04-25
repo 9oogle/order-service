@@ -1,4 +1,4 @@
-package com.goggles.orderservice.infrastructure.repository.custom;
+package com.goggles.orderservice.infrastructure.repository;
 
 import static com.goggles.orderservice.domain.entity.QOrder.order;
 
@@ -20,11 +20,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class OrderCustomRepositoryImpl implements OrderCustomRepository {
+public class OrderQueryDslRepository {
 
   private final JPAQueryFactory queryFactory;
 
-  @Override
   public Page<Order> getOrderPage(OrderListQuery query) {
     List<Order> content =
         queryFactory
