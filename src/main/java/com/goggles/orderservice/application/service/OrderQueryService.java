@@ -8,5 +8,6 @@ import org.springframework.data.domain.Page;
 
 public interface OrderQueryService {
   OrderDetailResult getOrderDetails(UUID orderId, UUID userId);
+
   Page<OrderListResult> getOrders(OrderListQuery orderListQuery);
 }
