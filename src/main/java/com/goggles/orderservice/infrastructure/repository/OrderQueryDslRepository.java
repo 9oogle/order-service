@@ -30,6 +30,7 @@ public class OrderQueryDslRepository {
             .selectFrom(order)
             .where(userCondition(query.userId()), statusCondition(query.orderStatus()))
             .orderBy(orderSpecifier(query.orderSort()))
+            .orderBy(order.id.desc())
             .offset((long) query.pageRequest().getPage() * query.pageRequest().getSize())
             .limit(query.pageRequest().getSize())
             .fetch();
