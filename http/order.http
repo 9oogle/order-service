@@ -34,6 +34,12 @@ X-User-Id: {{userId}}
 GET http://{{host}}/api/v1/orders?page=0&size=10&sort=createdAt,asc&orderStatus=COMPLETED
 X-User-Id: {{userId}}
 
+> {%
+  client.test("복합 조건 조회 성공", function() {
+    client.assert(response.status === 200, "응답 코드가 200이어야 합니다.");
+  });
+%}
+
 
 ### 2. 주문 상세 조회
 GET http://{{host}}/api/v1/orders/{{orderId}}

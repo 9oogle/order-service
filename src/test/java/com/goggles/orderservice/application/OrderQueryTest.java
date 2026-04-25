@@ -24,7 +24,6 @@ import com.goggles.orderservice.domain.vo.Instructor;
 import com.goggles.orderservice.domain.vo.OrderPrice;
 import com.goggles.orderservice.domain.vo.Orderer;
 import com.goggles.orderservice.domain.vo.Product;
-import com.goggles.orderservice.infrastructure.repository.custom.OrderCustomRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,7 +47,6 @@ public class OrderQueryTest {
   @InjectMocks private OrderQueryServiceImpl orderQueryService;
 
   @Mock private OrderRepository orderRepository;
-  @Mock private OrderCustomRepository orderCustomRepository;
 
   private UUID orderId;
   private UUID userId;
@@ -137,7 +135,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, null, pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order, order1), PageRequest.of(0, 10), 2);
-      given(orderCustomRepository.getOrderPage(query)).willReturn(orderPage);
+      given(orderRepository.getOrderPage(query)).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
@@ -161,7 +159,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, null, pageRequest);
 
       Page<Order> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
-      given(orderCustomRepository.getOrderPage(query)).willReturn(emptyPage);
+      given(orderRepository.getOrderPage(query)).willReturn(emptyPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
@@ -178,20 +176,20 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, "price,desc", null, pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order1, order), PageRequest.of(0, 10), 2);
-      given(orderCustomRepository.getOrderPage(query)).willReturn(orderPage);
+      given(orderRepository.getOrderPage(query)).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
 
       // then
       assertThat(result.getContent()).hasSize(2);
-      then(orderCustomRepository).should(times(1)).getOrderPage(query);
+      then(orderRepository).should(times(1)).getOrderPage(query);
 
       OrderListResult orderResult = result.getContent().get(0);
       assertThat(orderResult.orderId()).isEqualTo(order1.getId());
       assertThat(orderResult.status()).isEqualTo(OrderStatus.PAYMENT_PENDING);
       assertThat(orderResult.price().getOriginalPrice()).isEqualTo(900000L);
-      assertThat(orderResult.price().getFinalPrice()).isEqualTo(5000L);
+      assertThat(orderResult.price().getFinalPrice()).isEqualTo(895000L);
       assertThat(orderResult.orderItems()).hasSize(2);
     }
 
@@ -202,7 +200,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, "PAYMENT_PENDING", pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order), PageRequest.of(0, 10), 1);
-      given(orderCustomRepository.getOrderPage(query)).willReturn(orderPage);
+      given(orderRepository.getOrderPage(query)).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
@@ -219,7 +217,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, null, pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order), PageRequest.of(0, 10), 1);
-      given(orderCustomRepository.getOrderPage(query)).willReturn(orderPage);
+      given(orderRepository.getOrderPage(query)).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
