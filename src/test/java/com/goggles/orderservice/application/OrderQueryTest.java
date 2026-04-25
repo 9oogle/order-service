@@ -82,6 +82,7 @@ public class OrderQueryTest {
 
     ReflectionTestUtils.setField(order, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(order1, "id", UUID.randomUUID());
+    orderId = order.getId();
   }
 
   @Nested
