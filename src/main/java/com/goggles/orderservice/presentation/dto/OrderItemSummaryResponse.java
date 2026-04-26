@@ -21,6 +21,6 @@ public record OrderItemSummaryResponse(
         item.product().getProductType().name(),
         item.instructor().getInstructorId(),
         item.instructor().getInstructorName(),
-        item.status().name());
+        item.status().getDisplayName());
   }
 }

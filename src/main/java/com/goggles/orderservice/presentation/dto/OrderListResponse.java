@@ -18,7 +18,7 @@ public record OrderListResponse(
         result.price().getOriginalPrice(),
         result.price().getFinalPrice(),
         result.createdAt(),
-        result.status().name(),
+        result.status().getDisplayName(),
         result.orderItems().stream().map(OrderItemSummaryResponse::from).toList());
   }
 }
