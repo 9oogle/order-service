@@ -1,9 +1,10 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
-import com.goggles.common.exception.BadRequestException;
-import com.goggles.common.exception.ConflictException;
-import com.goggles.common.exception.NotFoundException;
+import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
+import com.goggles.orderservice.domain.exception.InvalidOrderException;
+import com.goggles.orderservice.domain.exception.NotFoundOrderItemException;
+import com.goggles.orderservice.domain.exception.OrderErrorCode;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -90,7 +91,7 @@ public class Order extends BaseAudit {
         items.stream()
             .filter(i -> i.getId().equals(itemId))
             .findFirst()
-            .orElseThrow(() -> new NotFoundException("존재하지 않는 주문 상품입니다: " + itemId));
+            .orElseThrow(NotFoundOrderItemException::new);
 
     item.cancel();
 
@@ -103,8 +104,10 @@ public class Order extends BaseAudit {
 
   private void transitionTo(OrderStatus next) {
     if (!this.status.canTransitionTo(next)) {
-      throw new BadRequestException(
-          String.format("주문 상태를 %s에서 %s로 변경할 수 없습니다.", this.status, next));
+      throw new InvalidOrderException(
+          OrderErrorCode.INVALID_STATUS_TRANSITION,
+          this.status.getDisplayName(),
+          next.getDisplayName());
     }
     this.status = next;
   }
@@ -118,11 +121,7 @@ public class Order extends BaseAudit {
                         && i.getProduct().getProductType() == item.getProduct().getProductType());
 
     if (duplicated) {
-      throw new ConflictException(
-          "동일한 상품이 이미 주문에 존재합니다: productType="
-              + item.getProduct().getProductType()
-              + ", productId="
-              + item.getProduct().getProductId());
+      throw new DuplicateOrderItemException();
     }
 
     this.items.add(item);
@@ -131,11 +130,11 @@ public class Order extends BaseAudit {
 
   private static void validateItems(List<OrderItemSpec> itemSpecs) {
     if (itemSpecs == null || itemSpecs.isEmpty()) {
-      throw new BadRequestException("주문 상품은 최소 1개 이상이어야 합니다.");
+      throw new InvalidOrderException(OrderErrorCode.EMPTY_ORDER_ITEMS);
     }
 
     if (itemSpecs.stream().anyMatch(Objects::isNull)) {
-      throw new BadRequestException("주문 상품에 null 값이 포함될 수 없습니다.");
+      throw new InvalidOrderException(OrderErrorCode.NULL_ORDER_ITEM);
     }
   }
 }

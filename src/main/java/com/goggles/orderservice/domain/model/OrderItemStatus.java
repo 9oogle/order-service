@@ -26,8 +26,4 @@ public enum OrderItemStatus {
   }
 
   public abstract Set<OrderItemStatus> allowedTransitions();
-
-  public boolean canTransitionTo(OrderItemStatus next) {
-    return allowedTransitions().contains(next);
-  }
 }

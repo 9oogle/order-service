@@ -1,6 +1,7 @@
 package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidVoException;
+import com.goggles.orderservice.domain.exception.VoErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.UUID;
@@ -28,11 +29,11 @@ public class Orderer {
 
   public static void validate(UUID studentId, String studentName) {
     if (studentId == null) {
-      throw new BadRequestException("studentId 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_STUDENT_ID);
     }
 
     if (studentName == null || studentName.isBlank()) {
-      throw new BadRequestException("studentName 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_STUDENT_NAME);
     }
   }
 }

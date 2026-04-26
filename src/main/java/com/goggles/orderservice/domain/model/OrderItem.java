@@ -1,7 +1,8 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidOrderException;
+import com.goggles.orderservice.domain.exception.OrderErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -50,14 +51,14 @@ public class OrderItem extends BaseAudit {
 
   void assignOrder(Order order) {
     if (this.order != null) {
-      throw new BadRequestException("이미 주문에 속한 상품입니다.");
+      throw new InvalidOrderException(OrderErrorCode.ALREADY_ASSIGNED_ORDER);
     }
     this.order = order;
   }
 
   void cancel() {
     if (this.status == OrderItemStatus.CANCELED) {
-      throw new BadRequestException("이미 취소된 주문 상품입니다.");
+      throw new InvalidOrderException(OrderErrorCode.ALREADY_CANCELED_ORDER_ITEM);
     }
     this.status = OrderItemStatus.CANCELED;
   }

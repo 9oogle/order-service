@@ -1,6 +1,7 @@
 package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidVoException;
+import com.goggles.orderservice.domain.exception.VoErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -40,19 +41,19 @@ public class Product {
   private static void validate(
       UUID productId, String productName, Long productPrice, OrderItemType productType) {
     if (productId == null) {
-      throw new BadRequestException("productId 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_PRODUCT_ID);
     }
     if (productName == null || productName.isBlank()) {
-      throw new BadRequestException("productName 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_PRODUCT_NAME);
     }
     if (productPrice == null) {
-      throw new BadRequestException("price 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_PRODUCT_PRICE);
     }
     if (productPrice < 0) {
-      throw new BadRequestException("productPrice 0 미만일 수 없습니다.");
+      throw new InvalidVoException(VoErrorCode.INVALID_PRODUCT_PRICE);
     }
     if (productType == null) {
-      throw new BadRequestException("productType 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_PRODUCT_TYPE);
     }
   }
 }
