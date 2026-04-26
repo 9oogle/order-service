@@ -76,7 +76,10 @@ dependencyManagement {
 
 spotless {
 	java {
-		googleJavaFormat('1.24.0')
+		googleJavaFormat('1.19.2')
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
 		target 'src/main/java/**/*.java', 'src/test/java/**/*.java'
 	}
 }

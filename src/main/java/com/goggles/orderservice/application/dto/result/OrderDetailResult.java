@@ -1,9 +1,9 @@
 package com.goggles.orderservice.application.dto.result;
 
-import com.goggles.orderservice.domain.model.Order;
-import com.goggles.orderservice.domain.model.OrderStatus;
 import com.goggles.orderservice.domain.model.Coupon;
+import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.model.OrderPrice;
+import com.goggles.orderservice.domain.model.OrderStatus;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.model.Payment;
 import java.time.LocalDateTime;

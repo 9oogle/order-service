@@ -1,8 +1,8 @@
 package com.goggles.orderservice.application.dto.result;
 
+import com.goggles.orderservice.domain.model.Instructor;
 import com.goggles.orderservice.domain.model.OrderItem;
 import com.goggles.orderservice.domain.model.OrderItemStatus;
-import com.goggles.orderservice.domain.model.Instructor;
 import com.goggles.orderservice.domain.model.Product;
 import java.util.UUID;
 

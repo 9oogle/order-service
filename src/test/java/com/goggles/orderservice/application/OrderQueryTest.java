@@ -29,7 +29,6 @@ import com.goggles.orderservice.domain.repository.OrderRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.management.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -187,8 +186,7 @@ public class OrderQueryTest {
 
       // then
       assertThat(result.getContent()).hasSize(2);
-      then(orderRepository).should(times(1))
-          .getOrderPage(domainQuery(query));
+      then(orderRepository).should(times(1)).getOrderPage(domainQuery(query));
 
       OrderListResult orderResult = result.getContent().get(0);
       assertThat(orderResult.orderId()).isEqualTo(order1.getId());
@@ -236,9 +234,11 @@ public class OrderQueryTest {
 
     private OrderPageQuery domainQuery(OrderListQuery query) {
       return new OrderPageQuery(
-          query.userId(), query.orderSort(), query.orderStatus(),
-          query.pageRequest().getPage(), query.pageRequest().getSize()
-      );
+          query.userId(),
+          query.orderSort(),
+          query.orderStatus(),
+          query.pageRequest().getPage(),
+          query.pageRequest().getSize());
     }
   }
 }
