@@ -1,6 +1,5 @@
 package com.goggles.orderservice.domain.exception;
 
-
 import com.goggles.common.exception.BadRequestException;
 
 public class InvalidVoException extends BadRequestException {
