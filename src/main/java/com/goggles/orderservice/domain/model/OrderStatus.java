@@ -1,40 +1,48 @@
-package com.goggles.orderservice.domain.enums;
+package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.exception.BadRequestException;
 import java.util.EnumSet;
 import java.util.Set;
+import lombok.Getter;
 
+@Getter
 public enum OrderStatus {
-  PAYMENT_PENDING {
+  PAYMENT_PENDING("결제 대기") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
       return EnumSet.of(PAID, PAYMENT_FAILED);
     }
   },
-  PAID {
+  PAID("결제 완료") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
       return EnumSet.of(COMPLETED);
     }
   },
-  COMPLETED {
+  COMPLETED("주문 완료") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
       return EnumSet.of(CANCELED);
     }
   },
-  PAYMENT_FAILED {
+  PAYMENT_FAILED("결제 실패") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
       return EnumSet.of(CANCELED);
     }
   },
-  CANCELED {
+  CANCELED("주문 취소") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
       return EnumSet.noneOf(OrderStatus.class);
     }
   };
+
+  private final String displayName;
+
+  OrderStatus(String displayName) {
+    this.displayName = displayName;
+  }
 
   public abstract Set<OrderStatus> allowedTransitions();
 

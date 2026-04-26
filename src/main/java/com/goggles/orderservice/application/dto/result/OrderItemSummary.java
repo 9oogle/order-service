@@ -1,9 +1,9 @@
 package com.goggles.orderservice.application.dto.result;
 
-import com.goggles.orderservice.domain.entity.OrderItem;
-import com.goggles.orderservice.domain.enums.OrderItemStatus;
-import com.goggles.orderservice.domain.vo.Instructor;
-import com.goggles.orderservice.domain.vo.Product;
+import com.goggles.orderservice.domain.model.Instructor;
+import com.goggles.orderservice.domain.model.OrderItem;
+import com.goggles.orderservice.domain.model.OrderItemStatus;
+import com.goggles.orderservice.domain.model.Product;
 import java.util.UUID;
 
 public record OrderItemSummary(

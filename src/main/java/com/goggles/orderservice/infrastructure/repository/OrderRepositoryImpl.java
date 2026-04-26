@@ -1,6 +1,6 @@
 package com.goggles.orderservice.infrastructure.repository;
 
-import com.goggles.orderservice.domain.entity.Order;
+import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.repository.OrderPageQuery;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import java.util.Optional;

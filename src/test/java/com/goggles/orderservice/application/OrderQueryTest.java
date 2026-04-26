@@ -15,17 +15,17 @@ import com.goggles.orderservice.application.dto.result.OrderDetailResult;
 import com.goggles.orderservice.application.dto.result.OrderItemSummary;
 import com.goggles.orderservice.application.dto.result.OrderListResult;
 import com.goggles.orderservice.application.service.impl.OrderQueryServiceImpl;
-import com.goggles.orderservice.domain.entity.Order;
-import com.goggles.orderservice.domain.enums.OrderItemStatus;
-import com.goggles.orderservice.domain.enums.OrderItemType;
-import com.goggles.orderservice.domain.enums.OrderStatus;
+import com.goggles.orderservice.domain.model.Instructor;
+import com.goggles.orderservice.domain.model.Order;
+import com.goggles.orderservice.domain.model.OrderItemSpec;
+import com.goggles.orderservice.domain.model.OrderItemStatus;
+import com.goggles.orderservice.domain.model.OrderItemType;
+import com.goggles.orderservice.domain.model.OrderPrice;
+import com.goggles.orderservice.domain.model.OrderStatus;
+import com.goggles.orderservice.domain.model.Orderer;
+import com.goggles.orderservice.domain.model.Product;
 import com.goggles.orderservice.domain.repository.OrderPageQuery;
 import com.goggles.orderservice.domain.repository.OrderRepository;
-import com.goggles.orderservice.domain.vo.Instructor;
-import com.goggles.orderservice.domain.vo.OrderItemSpec;
-import com.goggles.orderservice.domain.vo.OrderPrice;
-import com.goggles.orderservice.domain.vo.Orderer;
-import com.goggles.orderservice.domain.vo.Product;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -138,7 +138,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, null, pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order, order1), PageRequest.of(0, 10), 2);
-      given(orderRepository.getOrderPage(OrderPageQuery.from(query))).willReturn(orderPage);
+      given(orderRepository.getOrderPage(domainQuery(query))).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
@@ -162,7 +162,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, null, pageRequest);
 
       Page<Order> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
-      given(orderRepository.getOrderPage(OrderPageQuery.from(query))).willReturn(emptyPage);
+      given(orderRepository.getOrderPage(domainQuery(query))).willReturn(emptyPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
@@ -179,14 +179,14 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, "price,desc", null, pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order1, order), PageRequest.of(0, 10), 2);
-      given(orderRepository.getOrderPage(OrderPageQuery.from(query))).willReturn(orderPage);
+      given(orderRepository.getOrderPage(domainQuery(query))).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
 
       // then
       assertThat(result.getContent()).hasSize(2);
-      then(orderRepository).should(times(1)).getOrderPage(OrderPageQuery.from(query));
+      then(orderRepository).should(times(1)).getOrderPage(domainQuery(query));
 
       OrderListResult orderResult = result.getContent().get(0);
       assertThat(orderResult.orderId()).isEqualTo(order1.getId());
@@ -203,7 +203,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, "PAYMENT_PENDING", pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order), PageRequest.of(0, 10), 1);
-      given(orderRepository.getOrderPage(OrderPageQuery.from(query))).willReturn(orderPage);
+      given(orderRepository.getOrderPage(domainQuery(query))).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
@@ -220,7 +220,7 @@ public class OrderQueryTest {
       OrderListQuery query = OrderListQuery.of(userId, null, null, pageRequest);
 
       Page<Order> orderPage = new PageImpl<>(List.of(order), PageRequest.of(0, 10), 1);
-      given(orderRepository.getOrderPage(OrderPageQuery.from(query))).willReturn(orderPage);
+      given(orderRepository.getOrderPage(domainQuery(query))).willReturn(orderPage);
 
       // when
       Page<OrderListResult> result = orderQueryService.getOrders(query);
@@ -230,6 +230,15 @@ public class OrderQueryTest {
       assertThat(orderResult.orderItems()).hasSize(1);
       assertThat(orderResult.orderItems().get(0).product().getProductName()).isEqualTo("자바 강의");
       assertThat(orderResult.orderItems().get(0).product().getProductPrice()).isEqualTo(100000L);
+    }
+
+    private OrderPageQuery domainQuery(OrderListQuery query) {
+      return new OrderPageQuery(
+          query.userId(),
+          query.orderSort(),
+          query.orderStatus(),
+          query.pageRequest().getPage(),
+          query.pageRequest().getSize());
     }
   }
 }

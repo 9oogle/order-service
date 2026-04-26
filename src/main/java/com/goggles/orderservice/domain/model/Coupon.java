@@ -1,6 +1,7 @@
-package com.goggles.orderservice.domain.vo;
+package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidVoException;
+import com.goggles.orderservice.domain.exception.VoErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
@@ -43,11 +44,11 @@ public class Coupon {
     boolean hasName = couponName != null && !couponName.isBlank();
 
     if (hasId != hasCode || hasId != hasName) {
-      throw new BadRequestException("couponId, couponCode, couponName은 함께 존재하거나 함께 없어야 합니다.");
+      throw new InvalidVoException(VoErrorCode.INVALID_COUPON_FIELDS);
     }
 
     if (hasId && couponDiscountRate == null) {
-      throw new BadRequestException("쿠폰이 존재할 경우 couponDiscountRate도 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_COUPON_DISCOUNT_RATE);
     }
   }
 }

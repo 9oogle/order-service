@@ -1,6 +1,6 @@
-package com.goggles.orderservice.domain.enums;
+package com.goggles.orderservice.domain.model;
 
-import jakarta.ws.rs.BadRequestException;
+import com.goggles.common.exception.BadRequestException;
 import java.util.Arrays;
 
 public enum OrderSortType {

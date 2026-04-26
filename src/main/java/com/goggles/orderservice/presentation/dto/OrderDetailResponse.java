@@ -35,7 +35,7 @@ public record OrderDetailResponse(
         result.payment() != null ? result.payment().getPaymentKey() : null,
         result.payment() != null ? result.payment().getPaymentName() : null,
         result.createdAt(),
-        result.status().name(),
+        result.status().getDisplayName(),
         result.orderItems().stream().map(OrderItemSummaryResponse::from).toList());
   }
 }

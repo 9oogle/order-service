@@ -1,6 +1,7 @@
-package com.goggles.orderservice.domain.vo;
+package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidVoException;
+import com.goggles.orderservice.domain.exception.VoErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -32,16 +33,16 @@ public class OrderPrice {
 
   private static void validate(Long originalPrice, Long discountAmount) {
     if (originalPrice == null || discountAmount == null) {
-      throw new BadRequestException("originalPrice 또는 discountAmount는 null일 수 없습니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_PRICE_FIELDS);
     }
     if (originalPrice < 0) {
-      throw new BadRequestException("originalPrice는 0 미만일 수 없습니다.");
+      throw new InvalidVoException(VoErrorCode.INVALID_ORIGINAL_PRICE);
     }
     if (discountAmount < 0) {
-      throw new BadRequestException("discountAmount는 0 미만일 수 없습니다.");
+      throw new InvalidVoException(VoErrorCode.INVALID_DISCOUNT_AMOUNT);
     }
     if (discountAmount > originalPrice) {
-      throw new BadRequestException("discountAmount는 originalPrice를 초과할 수 없습니다.");
+      throw new InvalidVoException(VoErrorCode.DISCOUNT_EXCEEDS_ORIGINAL);
     }
   }
 }

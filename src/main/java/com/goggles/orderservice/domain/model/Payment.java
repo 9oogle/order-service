@@ -1,6 +1,7 @@
-package com.goggles.orderservice.domain.vo;
+package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidVoException;
+import com.goggles.orderservice.domain.exception.VoErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -27,10 +28,10 @@ public class Payment {
 
   private static void validate(String paymentKey, String paymentName) {
     if (paymentKey == null || paymentKey.isBlank()) {
-      throw new BadRequestException("paymentKey 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_PAYMENT_KEY);
     }
     if (paymentName == null || paymentName.isBlank()) {
-      throw new BadRequestException("paymentName 값은 필수입니다.");
+      throw new InvalidVoException(VoErrorCode.MISSING_PAYMENT_NAME);
     }
   }
 }
