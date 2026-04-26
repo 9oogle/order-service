@@ -1,10 +1,7 @@
-package com.goggles.orderservice.domain.entity;
+package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
 import com.goggles.common.exception.BadRequestException;
-import com.goggles.orderservice.domain.enums.OrderItemStatus;
-import com.goggles.orderservice.domain.vo.Instructor;
-import com.goggles.orderservice.domain.vo.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;

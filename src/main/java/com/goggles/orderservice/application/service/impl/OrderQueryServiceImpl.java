@@ -5,7 +5,7 @@ import com.goggles.orderservice.application.dto.query.OrderListQuery;
 import com.goggles.orderservice.application.dto.result.OrderDetailResult;
 import com.goggles.orderservice.application.dto.result.OrderListResult;
 import com.goggles.orderservice.application.service.OrderQueryService;
-import com.goggles.orderservice.domain.entity.Order;
+import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.repository.OrderPageQuery;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import java.util.UUID;

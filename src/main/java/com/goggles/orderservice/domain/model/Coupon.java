@@ -1,4 +1,4 @@
-package com.goggles.orderservice.domain.vo;
+package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.exception.BadRequestException;
 import jakarta.persistence.Column;

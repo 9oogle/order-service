@@ -1,16 +1,9 @@
-package com.goggles.orderservice.domain.entity;
+package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
 import com.goggles.common.exception.BadRequestException;
 import com.goggles.common.exception.ConflictException;
 import com.goggles.common.exception.NotFoundException;
-import com.goggles.orderservice.domain.enums.OrderItemStatus;
-import com.goggles.orderservice.domain.enums.OrderStatus;
-import com.goggles.orderservice.domain.vo.Coupon;
-import com.goggles.orderservice.domain.vo.OrderItemSpec;
-import com.goggles.orderservice.domain.vo.OrderPrice;
-import com.goggles.orderservice.domain.vo.Orderer;
-import com.goggles.orderservice.domain.vo.Payment;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

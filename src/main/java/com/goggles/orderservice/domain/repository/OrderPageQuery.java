@@ -1,8 +1,8 @@
 package com.goggles.orderservice.domain.repository;
 
 import com.goggles.orderservice.application.dto.query.OrderListQuery;
-import com.goggles.orderservice.domain.enums.OrderSortType;
-import com.goggles.orderservice.domain.enums.OrderStatus;
+import com.goggles.orderservice.domain.model.OrderSortType;
+import com.goggles.orderservice.domain.model.OrderStatus;
 import java.util.UUID;
 
 public record OrderPageQuery(

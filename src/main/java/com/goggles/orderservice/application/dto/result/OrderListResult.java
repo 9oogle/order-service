@@ -1,8 +1,8 @@
 package com.goggles.orderservice.application.dto.result;
 
-import com.goggles.orderservice.domain.entity.Order;
-import com.goggles.orderservice.domain.enums.OrderStatus;
-import com.goggles.orderservice.domain.vo.OrderPrice;
+import com.goggles.orderservice.domain.model.Order;
+import com.goggles.orderservice.domain.model.OrderStatus;
+import com.goggles.orderservice.domain.model.OrderPrice;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

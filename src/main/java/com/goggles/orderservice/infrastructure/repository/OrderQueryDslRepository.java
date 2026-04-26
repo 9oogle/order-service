@@ -1,10 +1,10 @@
 package com.goggles.orderservice.infrastructure.repository;
 
-import static com.goggles.orderservice.domain.entity.QOrder.order;
+import static com.goggles.orderservice.domain.model.QOrder.order;
 
-import com.goggles.orderservice.domain.entity.Order;
-import com.goggles.orderservice.domain.enums.OrderSortType;
-import com.goggles.orderservice.domain.enums.OrderStatus;
+import com.goggles.orderservice.domain.model.Order;
+import com.goggles.orderservice.domain.model.OrderSortType;
+import com.goggles.orderservice.domain.model.OrderStatus;
 import com.goggles.orderservice.domain.repository.OrderPageQuery;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;

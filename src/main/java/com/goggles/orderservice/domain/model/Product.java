@@ -1,7 +1,6 @@
-package com.goggles.orderservice.domain.vo;
+package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.exception.BadRequestException;
-import com.goggles.orderservice.domain.enums.OrderItemType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

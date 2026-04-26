@@ -1,6 +1,6 @@
 package com.goggles.orderservice.domain.repository;
 
-import com.goggles.orderservice.domain.entity.Order;
+import com.goggles.orderservice.domain.model.Order;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;

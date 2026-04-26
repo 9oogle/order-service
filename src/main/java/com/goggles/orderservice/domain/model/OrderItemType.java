@@ -1,4 +1,4 @@
-package com.goggles.orderservice.domain.enums;
+package com.goggles.orderservice.domain.model;
 
 public enum OrderItemType {
   COURSE,
