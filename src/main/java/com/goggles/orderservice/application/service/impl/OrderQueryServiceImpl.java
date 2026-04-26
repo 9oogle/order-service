@@ -32,7 +32,14 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 
   @Override
   public Page<OrderListResult> getOrders(OrderListQuery orderListQuery) {
-    Page<Order> orderPage = orderRepository.getOrderPage(OrderPageQuery.from(orderListQuery));
+    OrderPageQuery query =
+        new OrderPageQuery(
+            orderListQuery.userId(),
+            orderListQuery.orderSort(),
+            orderListQuery.orderStatus(),
+            orderListQuery.pageRequest().getPage(),
+            orderListQuery.pageRequest().getSize());
+    Page<Order> orderPage = orderRepository.getOrderPage(query);
     return orderPage.map(OrderListResult::from);
   }
 }
