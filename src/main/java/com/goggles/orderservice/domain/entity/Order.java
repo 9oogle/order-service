@@ -7,11 +7,10 @@ import com.goggles.common.exception.NotFoundException;
 import com.goggles.orderservice.domain.enums.OrderItemStatus;
 import com.goggles.orderservice.domain.enums.OrderStatus;
 import com.goggles.orderservice.domain.vo.Coupon;
-import com.goggles.orderservice.domain.vo.Instructor;
+import com.goggles.orderservice.domain.vo.OrderItemSpec;
 import com.goggles.orderservice.domain.vo.OrderPrice;
 import com.goggles.orderservice.domain.vo.Orderer;
 import com.goggles.orderservice.domain.vo.Payment;
-import com.goggles.orderservice.domain.vo.Product;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -62,22 +61,18 @@ public class Order extends BaseAudit {
   }
 
   public static Order create(
-      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItem> items) {
-    validateItems(items);
+      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItemSpec> itemSpecs) {
+    validateItems(itemSpecs);
     Order order = new Order();
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
 
-    for (OrderItem item : items) {
-      order.addItem(item);
+    for (OrderItemSpec spec : itemSpecs) {
+      order.addItem(OrderItem.create(spec.product(), spec.instructor()));
     }
 
     return order;
-  }
-
-  public static OrderItem createItem(Product product, Instructor instructor) {
-    return OrderItem.create(product, instructor);
   }
 
   public void pay(String paymentKey, String paymentName) {
@@ -141,12 +136,12 @@ public class Order extends BaseAudit {
     item.assignOrder(this);
   }
 
-  private static void validateItems(List<OrderItem> items) {
-    if (items == null || items.isEmpty()) {
+  private static void validateItems(List<OrderItemSpec> itemSpecs) {
+    if (itemSpecs == null || itemSpecs.isEmpty()) {
       throw new BadRequestException("주문 상품은 최소 1개 이상이어야 합니다.");
     }
 
-    if (items.stream().anyMatch(Objects::isNull)) {
+    if (itemSpecs.stream().anyMatch(Objects::isNull)) {
       throw new BadRequestException("주문 상품에 null 값이 포함될 수 없습니다.");
     }
   }
