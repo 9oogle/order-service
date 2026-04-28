@@ -59,8 +59,7 @@ public class OrderController {
       @RequestHeader("X-User-Role") String userRole,
       @Valid @RequestBody CreateMentoringOrderRequest request) {
     return CreateOrderResponse.from(
-        orderCommandService.createMentoringOrder(
-            CreateMentoringOrderCommand.of(request, userId, userRole)));
+        orderCommandService.createMentoringOrder(request.toCommand(userId, userRole)));
   }
 
   @PostMapping("/lecture")
@@ -70,6 +69,6 @@ public class OrderController {
       @Valid @RequestBody CreateLectureOrderRequest request) {
     return CreateOrderResponse.from(
         orderCommandService.createLectureOrder(
-            CreateLectureOrderCommand.from(request, userId, userRole)));
+            request.toCommand(userId, userRole)));
   }
 }

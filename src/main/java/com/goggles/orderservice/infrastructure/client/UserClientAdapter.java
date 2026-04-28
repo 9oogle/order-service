@@ -16,6 +16,6 @@ public class UserClientAdapter implements UserReader {
   @Override
   public UserInfo getUserInfo(UUID userId) {
     GetUserInfoResponse response = userClient.getUserInfo(userId);
-    return UserInfo.from(response);
+    return response.toUserInfo();
   }
 }

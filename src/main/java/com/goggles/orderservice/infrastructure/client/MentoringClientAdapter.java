@@ -22,6 +22,7 @@ public class MentoringClientAdapter implements MentoringProvider {
             data.userRole().name(),
             data.userName(),
             ReserveMentoringRequest.from(data));
-    return ProductReserveInfo.from(response);
+
+    return response.toProductReserveInfo();
   }
 }

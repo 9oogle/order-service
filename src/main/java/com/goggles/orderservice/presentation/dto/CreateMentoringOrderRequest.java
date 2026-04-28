@@ -1,5 +1,6 @@
 package com.goggles.orderservice.presentation.dto;
 
+import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,4 +21,19 @@ public record CreateMentoringOrderRequest(
       @NotNull(message = "멘토링 날짜는 필수입니다.") LocalDate date,
       @NotNull(message = "멘토링 시작 시간은 필수입니다.") LocalDateTime startTime,
       @NotNull(message = "멘토링 종료 시간은 필수입니다.") LocalDateTime endTime) {}
+
+  public CreateMentoringOrderCommand toCommand(UUID userId, String userRole) {
+    return new CreateMentoringOrderCommand(
+        userId,
+        userRole,
+        this.mentoringId,
+        this.requestMessage,
+        this.couponId,
+        this.paymentMethod,
+        this.items.stream()
+            .map(item -> new CreateMentoringOrderCommand.TimeSlot(
+                item.date(), item.startTime(), item.endTime()))
+            .toList()
+    );
+  }
 }

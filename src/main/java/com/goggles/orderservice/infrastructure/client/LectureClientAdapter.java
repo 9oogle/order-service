@@ -20,6 +20,6 @@ public class LectureClientAdapter implements LectureProvider {
         lectureClient.reserveEnrollment(
             data.userId(), data.userRole().name(), ReserveLectureRequest.from(data));
 
-    return ProductReserveInfo.from(response);
+    return response.toProductReserveInfo();
   }
 }
