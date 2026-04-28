@@ -1,6 +1,8 @@
 package com.goggles.orderservice.application.dto.external;
 
 import com.goggles.orderservice.application.common.UserRole;
+import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
+import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand.TimeSlot;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,5 +16,24 @@ public record MentoringProductReserveData(
       LocalDate date,
       LocalDateTime startTime,
       LocalDateTime endTime
-  ){}
+  ){
+    public static ProductItem from(TimeSlot timeSlot){
+      return new ProductItem(
+        timeSlot.date(),
+        timeSlot.startTime(),
+        timeSlot.endTime()
+      );
+    }
+  }
+
+  public static MentoringProductReserveData of(CreateMentoringOrderCommand command, String userName) {
+    return new MentoringProductReserveData(
+        command.userId(),
+        UserRole.valueOf(command.userRole()),
+        userName,
+        command.mentoringId(),
+        command.requestMessage(),
+        command.timeSlots().stream().map(ProductItem::from).toList()
+    );
+  }
 }

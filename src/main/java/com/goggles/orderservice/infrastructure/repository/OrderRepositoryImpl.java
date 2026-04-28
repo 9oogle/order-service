@@ -24,4 +24,9 @@ public class OrderRepositoryImpl implements OrderRepository {
   public Page<Order> getOrderPage(OrderPageQuery query) {
     return orderQueryDslRepository.getOrderPage(query);
   }
+
+  @Override
+  public Order createOrder(Order order) {
+    return orderJpaRepository.save(order);
+  }
 }
