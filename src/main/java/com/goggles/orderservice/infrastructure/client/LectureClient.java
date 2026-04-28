@@ -12,5 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface LectureClient {
   @PostMapping("/internal/v1/lectures-enrollment/reserve")
   ReserveProductResponse reserveEnrollment(
-      @RequestHeader("X-User-Id") UUID userId, @RequestBody ReserveLectureRequest request);
+      @RequestHeader("X-User-Id") UUID userId,
+      @RequestHeader("X-User-Role") String userRole,
+      @RequestBody ReserveLectureRequest request);
 }

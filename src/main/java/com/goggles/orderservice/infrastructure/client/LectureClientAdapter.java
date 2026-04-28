@@ -1,7 +1,7 @@
 package com.goggles.orderservice.infrastructure.client;
 
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
-import com.goggles.orderservice.application.dto.external.LectureProductReserveInfo;
+import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
@@ -14,11 +14,11 @@ public class LectureClientAdapter implements LectureProvider {
   private final LectureClient lectureClient;
 
   @Override
-  public LectureProductReserveInfo reserveEnrollment(LectureProductReserveData data) {
+  public ProductReserveInfo reserveEnrollment(LectureProductReserveData data) {
 
     ReserveProductResponse response =
-        lectureClient.reserveEnrollment(data.userId(), ReserveLectureRequest.from(data));
+        lectureClient.reserveEnrollment(data.userId(), data.userRole().name(), ReserveLectureRequest.from(data));
 
-    return LectureProductReserveInfo.from(response);
+    return ProductReserveInfo.from(response);
   }
 }
