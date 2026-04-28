@@ -64,7 +64,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             new OrderPrice(totalPrice, 0L),
             itemSpecs);
 
-    orderRepository.createOrder(order);
+    order = orderRepository.createOrder(order);
 
     return CreateOrderResult.from(order);
   }

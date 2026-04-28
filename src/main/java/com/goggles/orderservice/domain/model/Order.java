@@ -69,8 +69,8 @@ public class Order extends BaseAudit {
     return order;
   }
 
-  public void pay(String paymentKey, String paymentName) {
-    this.payment = new Payment(paymentKey, paymentName);
+  public void pay(String paymentKey, String paymentMethod) {
+    this.payment = new Payment(paymentKey, paymentMethod);
     transitionTo(OrderStatus.PAID);
   }
 
