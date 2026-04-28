@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReserveProductResponse {
   private List<ProductEnrollment> enrollments;
-  private int count;
 
   @Getter
   @NoArgsConstructor
