@@ -1,0 +1,6 @@
+package com.goggles.orderservice.application.dto.external;
+
+import java.util.List;
+import java.util.UUID;
+
+public record LectureProductReserveData(List<UUID> productIds, UUID userId, String userName) {}
