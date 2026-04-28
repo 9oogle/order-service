@@ -9,6 +9,5 @@ import java.util.UUID;
 public record CreateLectureOrderRequest(
     UUID couponId,
     @NotBlank(message = "결제 수단은 필수입니다.") String paymentMethod,
-    @NotNull(message = "주문 상품은 필수입니다.")
-    @Size(min = 1, message = "주문 상품은 최소 1개 이상이어야 합니다.") List<UUID> items) {
-}
+    @NotNull(message = "주문 상품은 필수입니다.") @Size(min = 1, message = "주문 상품은 최소 1개 이상이어야 합니다.")
+        List<UUID> items) {}

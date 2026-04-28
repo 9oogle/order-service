@@ -38,12 +38,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Long totalPrice = calculateTotalPrice(productInfo);
     List<OrderItemSpec> itemSpecs = convertOrderItemSpecs(productInfo, OrderItemType.LECTURE);
 
-    Order order = Order.create(
-        new Orderer(userInfo.userId(), userInfo.userName()),
-        null,
-        new OrderPrice(totalPrice, 0L),
-        itemSpecs
-    );
+    Order order =
+        Order.create(
+            new Orderer(userInfo.userId(), userInfo.userName()),
+            null,
+            new OrderPrice(totalPrice, 0L),
+            itemSpecs);
 
     order = orderRepository.createOrder(order);
 
@@ -57,43 +57,37 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Long totalPrice = calculateTotalPrice(productInfo);
     List<OrderItemSpec> itemSpecs = convertOrderItemSpecs(productInfo, OrderItemType.MENTORING);
 
-    Order order = Order.create(
-        new Orderer(userInfo.userId(), userInfo.userName()),
-        null,
-        new OrderPrice(totalPrice, 0L),
-        itemSpecs
-    );
+    Order order =
+        Order.create(
+            new Orderer(userInfo.userId(), userInfo.userName()),
+            null,
+            new OrderPrice(totalPrice, 0L),
+            itemSpecs);
 
     orderRepository.createOrder(order);
 
     return CreateOrderResult.from(order);
   }
 
-  private UserInfo getUserInfo(UUID userId){
+  private UserInfo getUserInfo(UUID userId) {
     return userReader.getUserInfo(userId);
   }
 
-  private ProductReserveInfo reserveLecture (
-      CreateLectureOrderCommand command, String userName){
+  private ProductReserveInfo reserveLecture(CreateLectureOrderCommand command, String userName) {
     return lectureProvider.reserveEnrollment(LectureProductReserveData.of(command, userName));
   }
 
-  private ProductReserveInfo reserveMentoring (
-      CreateMentoringOrderCommand command, String userName){
+  private ProductReserveInfo reserveMentoring(
+      CreateMentoringOrderCommand command, String userName) {
     return mentoringProvider.reserveEnrollment(MentoringProductReserveData.of(command, userName));
   }
 
-  private Long calculateTotalPrice(ProductReserveInfo productInfo){
-    return productInfo.products().stream()
-        .mapToLong(ProductItem::productPrice)
-        .sum();
+  private Long calculateTotalPrice(ProductReserveInfo productInfo) {
+    return productInfo.products().stream().mapToLong(ProductItem::productPrice).sum();
   }
 
   private List<OrderItemSpec> convertOrderItemSpecs(
-      ProductReserveInfo productInfo, OrderItemType type){
-    return productInfo.products().stream()
-        .map(product -> product.toOrderItemSpec(type))
-        .toList();
+      ProductReserveInfo productInfo, OrderItemType type) {
+    return productInfo.products().stream().map(product -> product.toOrderItemSpec(type)).toList();
   }
-
 }

@@ -13,8 +13,7 @@ public record ProductReserveInfo(List<ProductItem> products) {
 
   public static ProductReserveInfo from(ReserveProductResponse response) {
     return new ProductReserveInfo(
-        response.getEnrollments().stream().map(ProductItem::from).toList()
-    );
+        response.getEnrollments().stream().map(ProductItem::from).toList());
   }
 
   public record ProductItem(
@@ -38,8 +37,7 @@ public record ProductReserveInfo(List<ProductItem> products) {
     public OrderItemSpec toOrderItemSpec(OrderItemType type) {
       return new OrderItemSpec(
           new Product(productId(), productName(), productPrice(), type),
-          new Instructor(instructorId(), instructorName())
-      );
+          new Instructor(instructorId(), instructorName()));
     }
   }
 }

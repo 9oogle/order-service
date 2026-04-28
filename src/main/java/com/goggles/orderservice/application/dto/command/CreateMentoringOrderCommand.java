@@ -14,19 +14,10 @@ public record CreateMentoringOrderCommand(
     String requestMessage,
     UUID couponId,
     String paymentMethod,
-    List<TimeSlot> timeSlots
-) {
-  public record TimeSlot(
-      LocalDate date,
-      LocalDateTime startTime,
-      LocalDateTime endTime
-  ) {
-    public static TimeSlot from(MentoringTimeSlots timeSlots){
-      return new TimeSlot(
-          timeSlots.date(),
-          timeSlots.startTime(),
-          timeSlots.endTime()
-      );
+    List<TimeSlot> timeSlots) {
+  public record TimeSlot(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
+    public static TimeSlot from(MentoringTimeSlots timeSlots) {
+      return new TimeSlot(timeSlots.date(), timeSlots.startTime(), timeSlots.endTime());
     }
   }
 
@@ -39,7 +30,6 @@ public record CreateMentoringOrderCommand(
         request.requestMessage(),
         request.couponId(),
         request.paymentMethod(),
-        request.items().stream().map(TimeSlot::from).toList()
-    );
+        request.items().stream().map(TimeSlot::from).toList());
   }
 }

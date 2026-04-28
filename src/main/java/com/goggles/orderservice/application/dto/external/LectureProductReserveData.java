@@ -9,10 +9,6 @@ public record LectureProductReserveData(
     List<UUID> productIds, UUID userId, UserRole userRole, String userName) {
   public static LectureProductReserveData of(CreateLectureOrderCommand command, String userName) {
     return new LectureProductReserveData(
-        command.items(),
-        command.userId(),
-        UserRole.valueOf(command.userRole()),
-        userName
-    );
+        command.items(), command.userId(), UserRole.valueOf(command.userRole()), userName);
   }
 }

@@ -27,19 +27,14 @@ public class ReserveMentoringRequest {
     private LocalDateTime endTime;
 
     static BookingTimeSlots from(ProductItem item) {
-      return new BookingTimeSlots(
-          item.date(),
-          item.startTime(),
-          item.endTime()
-      );
+      return new BookingTimeSlots(item.date(), item.startTime(), item.endTime());
     }
   }
 
-  public static ReserveMentoringRequest from(MentoringProductReserveData data){
+  public static ReserveMentoringRequest from(MentoringProductReserveData data) {
     return new ReserveMentoringRequest(
         data.productId(),
         data.requestMessage(),
-        data.items().stream().map(BookingTimeSlots::from).toList()
-    );
+        data.items().stream().map(BookingTimeSlots::from).toList());
   }
 }

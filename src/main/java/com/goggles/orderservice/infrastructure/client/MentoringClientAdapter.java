@@ -17,7 +17,10 @@ public class MentoringClientAdapter implements MentoringProvider {
   @Override
   public ProductReserveInfo reserveEnrollment(MentoringProductReserveData data) {
     ReserveProductResponse response =
-        mentoringClient.reserveEnrollment(data.userId(), data.userRole().name(), data.userName(),
+        mentoringClient.reserveEnrollment(
+            data.userId(),
+            data.userRole().name(),
+            data.userName(),
             ReserveMentoringRequest.from(data));
     return ProductReserveInfo.from(response);
   }

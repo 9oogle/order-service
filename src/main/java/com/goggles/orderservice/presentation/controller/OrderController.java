@@ -57,19 +57,19 @@ public class OrderController {
   public CreateOrderResponse createMentoringOrder(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
-      @Valid @RequestBody CreateMentoringOrderRequest request
-  ){
-    return CreateOrderResponse.from(orderCommandService.createMentoringOrder(
-        CreateMentoringOrderCommand.of(request, userId, userRole)));
+      @Valid @RequestBody CreateMentoringOrderRequest request) {
+    return CreateOrderResponse.from(
+        orderCommandService.createMentoringOrder(
+            CreateMentoringOrderCommand.of(request, userId, userRole)));
   }
 
   @PostMapping("/lecture")
   public CreateOrderResponse createLectureOrder(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
-      @Valid @RequestBody CreateLectureOrderRequest request
-  ){
-    return CreateOrderResponse.from(orderCommandService.createLectureOrder(
-        CreateLectureOrderCommand.from(request, userId, userRole)));
+      @Valid @RequestBody CreateLectureOrderRequest request) {
+    return CreateOrderResponse.from(
+        orderCommandService.createLectureOrder(
+            CreateLectureOrderCommand.from(request, userId, userRole)));
   }
 }

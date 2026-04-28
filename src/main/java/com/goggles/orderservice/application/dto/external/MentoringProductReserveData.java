@@ -9,31 +9,26 @@ import java.util.List;
 import java.util.UUID;
 
 public record MentoringProductReserveData(
-    UUID userId, UserRole userRole, String userName,
-    UUID productId, String requestMessage, List<ProductItem> items
-) {
-  public record ProductItem(
-      LocalDate date,
-      LocalDateTime startTime,
-      LocalDateTime endTime
-  ){
-    public static ProductItem from(TimeSlot timeSlot){
-      return new ProductItem(
-        timeSlot.date(),
-        timeSlot.startTime(),
-        timeSlot.endTime()
-      );
+    UUID userId,
+    UserRole userRole,
+    String userName,
+    UUID productId,
+    String requestMessage,
+    List<ProductItem> items) {
+  public record ProductItem(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
+    public static ProductItem from(TimeSlot timeSlot) {
+      return new ProductItem(timeSlot.date(), timeSlot.startTime(), timeSlot.endTime());
     }
   }
 
-  public static MentoringProductReserveData of(CreateMentoringOrderCommand command, String userName) {
+  public static MentoringProductReserveData of(
+      CreateMentoringOrderCommand command, String userName) {
     return new MentoringProductReserveData(
         command.userId(),
         UserRole.valueOf(command.userRole()),
         userName,
         command.mentoringId(),
         command.requestMessage(),
-        command.timeSlots().stream().map(ProductItem::from).toList()
-    );
+        command.timeSlots().stream().map(ProductItem::from).toList());
   }
 }
