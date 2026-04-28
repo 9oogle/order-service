@@ -17,7 +17,7 @@ public record OrderDetailResponse(
     String couponName,
     BigDecimal couponDiscountRate,
     String paymentKey,
-    String paymentName,
+    String paymentMethod,
     LocalDateTime orderDate,
     String orderStatus,
     List<OrderItemSummaryResponse> orderItems) {
@@ -33,7 +33,7 @@ public record OrderDetailResponse(
         result.coupon() != null ? result.coupon().getCouponName() : null,
         result.coupon() != null ? result.coupon().getCouponDiscountRate() : null,
         result.payment() != null ? result.payment().getPaymentKey() : null,
-        result.payment() != null ? result.payment().getPaymentName() : null,
+        result.payment() != null ? result.payment().getPaymentMethod() : null,
         result.createdAt(),
         result.status().getDisplayName(),
         result.orderItems().stream().map(OrderItemSummaryResponse::from).toList());
