@@ -25,7 +25,7 @@ public record MentoringProductReserveData(
       CreateMentoringOrderCommand command, String userName) {
     return new MentoringProductReserveData(
         command.userId(),
-        UserRole.valueOf(command.userRole()),
+        UserRole.from(command.userRole()),
         userName,
         command.mentoringId(),
         command.requestMessage(),
