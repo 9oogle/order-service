@@ -7,17 +7,17 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class ReserveLectureResponse {
-  private List<LectureEnrollment> lectureEnrollments;
+public class ReserveProductResponse {
+  private List<ProductEnrollment> enrollments;
   private int count;
 
   @Getter
   @NoArgsConstructor
-  public static class LectureEnrollment {
+  public static class ProductEnrollment {
     private UUID enrollmentId;
-    private UUID lectureId;
-    private String lectureName;
-    private Long lecturePrice;
+    private UUID productId;
+    private String productName;
+    private Long productPrice;
     private UUID instructorId;
     private String instructorName;
   }

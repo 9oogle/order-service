@@ -1,15 +1,15 @@
 package com.goggles.orderservice.application.dto.external;
 
-import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureResponse;
-import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureResponse.LectureEnrollment;
+import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
+import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse.ProductEnrollment;
 import java.util.List;
 import java.util.UUID;
 
 public record LectureProductReserveInfo(List<LectureProduct> products, int count) {
 
-  public static LectureProductReserveInfo from(ReserveLectureResponse response) {
+  public static LectureProductReserveInfo from(ReserveProductResponse response) {
     return new LectureProductReserveInfo(
-        response.getLectureEnrollments().stream().map(LectureProduct::from).toList(),
+        response.getEnrollments().stream().map(LectureProduct::from).toList(),
         response.getCount());
   }
 
@@ -20,12 +20,12 @@ public record LectureProductReserveInfo(List<LectureProduct> products, int count
       Long lecturePrice,
       UUID instructorId,
       String instructorName) {
-    public static LectureProduct from(LectureEnrollment lectureProduct) {
+    public static LectureProduct from(ProductEnrollment lectureProduct) {
       return new LectureProduct(
           lectureProduct.getEnrollmentId(),
-          lectureProduct.getLectureId(),
-          lectureProduct.getLectureName(),
-          lectureProduct.getLecturePrice(),
+          lectureProduct.getProductId(),
+          lectureProduct.getProductName(),
+          lectureProduct.getProductPrice(),
           lectureProduct.getInstructorId(),
           lectureProduct.getInstructorName());
     }
