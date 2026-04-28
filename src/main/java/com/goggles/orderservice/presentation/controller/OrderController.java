@@ -2,8 +2,6 @@ package com.goggles.orderservice.presentation.controller;
 
 import com.goggles.common.pagination.CommonPageRequest;
 import com.goggles.common.pagination.CommonPageResponse;
-import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
-import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.query.OrderListQuery;
 import com.goggles.orderservice.application.dto.result.OrderListResult;
 import com.goggles.orderservice.application.service.OrderCommandService;
@@ -68,7 +66,6 @@ public class OrderController {
       @RequestHeader("X-User-Role") String userRole,
       @Valid @RequestBody CreateLectureOrderRequest request) {
     return CreateOrderResponse.from(
-        orderCommandService.createLectureOrder(
-            request.toCommand(userId, userRole)));
+        orderCommandService.createLectureOrder(request.toCommand(userId, userRole)));
   }
 }

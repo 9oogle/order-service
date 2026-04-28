@@ -13,9 +13,7 @@ public class ReserveProductResponse {
 
   public ProductReserveInfo toProductReserveInfo() {
     return new ProductReserveInfo(
-        this.enrollments.stream()
-            .map(ProductEnrollment::toProductItem)
-            .toList());
+        this.enrollments.stream().map(ProductEnrollment::toProductItem).toList());
   }
 
   @Getter

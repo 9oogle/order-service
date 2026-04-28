@@ -13,6 +13,5 @@ public record CreateMentoringOrderCommand(
     UUID couponId,
     String paymentMethod,
     List<TimeSlot> timeSlots) {
-  public record TimeSlot(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
-  }
+  public record TimeSlot(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {}
 }

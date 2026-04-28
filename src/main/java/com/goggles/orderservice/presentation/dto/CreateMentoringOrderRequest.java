@@ -31,9 +31,10 @@ public record CreateMentoringOrderRequest(
         this.couponId,
         this.paymentMethod,
         this.items.stream()
-            .map(item -> new CreateMentoringOrderCommand.TimeSlot(
-                item.date(), item.startTime(), item.endTime()))
-            .toList()
-    );
+            .map(
+                item ->
+                    new CreateMentoringOrderCommand.TimeSlot(
+                        item.date(), item.startTime(), item.endTime()))
+            .toList());
   }
 }
