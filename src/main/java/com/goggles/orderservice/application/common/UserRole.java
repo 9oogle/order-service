@@ -8,8 +8,7 @@ public enum UserRole {
   MASTER;
 
   public static UserRole from(String value) {
-    if (value == null || value.isBlank())
-      throw new BadRequestException("사용자 역할은 필수입니다.");
+    if (value == null || value.isBlank()) throw new BadRequestException("사용자 역할은 필수입니다.");
     try {
       return UserRole.valueOf(value.toUpperCase());
     } catch (IllegalArgumentException e) {
