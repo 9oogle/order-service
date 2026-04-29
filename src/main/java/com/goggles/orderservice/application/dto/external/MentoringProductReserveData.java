@@ -4,7 +4,7 @@ import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand.TimeSlot;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +15,7 @@ public record MentoringProductReserveData(
     UUID productId,
     String requestMessage,
     List<ProductItem> items) {
-  public record ProductItem(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
+  public record ProductItem(LocalDate date, LocalTime startTime, LocalTime endTime) {
     public static ProductItem from(TimeSlot timeSlot) {
       return new ProductItem(timeSlot.date(), timeSlot.startTime(), timeSlot.endTime());
     }

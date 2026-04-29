@@ -3,7 +3,7 @@ package com.goggles.orderservice.infrastructure.client.dto;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData.ProductItem;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -23,8 +23,8 @@ public class ReserveMentoringRequest {
   @AllArgsConstructor
   public static class BookingTimeSlots {
     private LocalDate date;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     static BookingTimeSlots from(ProductItem item) {
       return new BookingTimeSlots(item.date(), item.startTime(), item.endTime());
