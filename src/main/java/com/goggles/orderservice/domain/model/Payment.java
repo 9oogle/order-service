@@ -18,19 +18,19 @@ public class Payment {
   private String paymentKey;
 
   @Column(name = "payment_name", length = 100)
-  private String paymentName;
+  private String paymentMethod;
 
-  public Payment(String paymentKey, String paymentName) {
-    validate(paymentKey, paymentName);
+  public Payment(String paymentKey, String paymentMethod) {
+    validate(paymentKey, paymentMethod);
     this.paymentKey = paymentKey;
-    this.paymentName = paymentName;
+    this.paymentMethod = paymentMethod;
   }
 
-  private static void validate(String paymentKey, String paymentName) {
+  private static void validate(String paymentKey, String paymentMethod) {
     if (paymentKey == null || paymentKey.isBlank()) {
       throw new InvalidVoException(VoErrorCode.MISSING_PAYMENT_KEY);
     }
-    if (paymentName == null || paymentName.isBlank()) {
+    if (paymentMethod == null || paymentMethod.isBlank()) {
       throw new InvalidVoException(VoErrorCode.MISSING_PAYMENT_NAME);
     }
   }

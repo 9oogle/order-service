@@ -1,0 +1,19 @@
+package com.goggles.orderservice.infrastructure.client;
+
+import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringRequest;
+import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
+import java.util.UUID;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+
+@FeignClient(name = "mentoring-service")
+public interface MentoringClient {
+  @PostMapping("/internal/v1/mentoring-booking")
+  ReserveProductResponse reserveEnrollment(
+      @RequestHeader("X-User-Id") UUID userId,
+      @RequestHeader("X-User-Role") String userRole,
+      @RequestHeader("X-User-Name") String userName,
+      @RequestBody ReserveMentoringRequest request);
+}

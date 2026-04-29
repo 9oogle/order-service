@@ -18,7 +18,7 @@ public enum VoErrorCode {
 
   // PaymentInfo
   MISSING_PAYMENT_KEY("paymentKey 값은 필수입니다."),
-  MISSING_PAYMENT_NAME("paymentName 값은 필수입니다."),
+  MISSING_PAYMENT_NAME("paymentMethod 값은 필수입니다."),
 
   // ProductInfo
   MISSING_PRODUCT_ID("productId 값은 필수입니다."),

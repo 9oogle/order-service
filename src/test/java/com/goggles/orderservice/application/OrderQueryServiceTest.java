@@ -45,7 +45,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-public class OrderQueryTest {
+public class OrderQueryServiceTest {
   @InjectMocks private OrderQueryServiceImpl orderQueryService;
 
   @Mock private OrderRepository orderRepository;
@@ -66,7 +66,7 @@ public class OrderQueryTest {
             new OrderPrice(110000L, 15000L),
             List.of(
                 new OrderItemSpec(
-                    new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.COURSE),
+                    new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명"))));
 
     order1 =
@@ -76,10 +76,10 @@ public class OrderQueryTest {
             new OrderPrice(900000L, 5000L),
             List.of(
                 new OrderItemSpec(
-                    new Product(UUID.randomUUID(), "스프링 강의", 110000L, OrderItemType.COURSE),
+                    new Product(UUID.randomUUID(), "스프링 강의", 110000L, OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명")),
                 new OrderItemSpec(
-                    new Product(UUID.randomUUID(), "GITHUB 강의", 580000L, OrderItemType.COURSE),
+                    new Product(UUID.randomUUID(), "GITHUB 강의", 580000L, OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명"))));
 
     ReflectionTestUtils.setField(order, "id", UUID.randomUUID());
