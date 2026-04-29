@@ -45,7 +45,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-public class OrderQueryTest {
+public class OrderQueryServiceTest {
   @InjectMocks private OrderQueryServiceImpl orderQueryService;
 
   @Mock private OrderRepository orderRepository;
