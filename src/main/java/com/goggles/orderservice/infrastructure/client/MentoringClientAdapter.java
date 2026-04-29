@@ -23,6 +23,6 @@ public class MentoringClientAdapter implements MentoringProvider {
             data.userName(),
             ReserveMentoringRequest.from(data));
 
-    return response.toProductReserveInfo();
+    return response.toProductItem();
   }
 }

@@ -5,7 +5,6 @@ import com.goggles.orderservice.application.dto.command.CreateMentoringOrderComm
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
-import com.goggles.orderservice.application.dto.external.ProductReserveInfo.ProductItem;
 import com.goggles.orderservice.application.dto.external.UserInfo;
 import com.goggles.orderservice.application.dto.result.CreateOrderResult;
 import com.goggles.orderservice.application.port.out.LectureProvider;
@@ -18,6 +17,7 @@ import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +32,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   private final OrderRepository orderRepository;
 
   @Override
+  @Transactional
   public CreateOrderResult createLectureOrder(CreateLectureOrderCommand command) {
     UserInfo userInfo = getUserInfo(command.userId());
-    ProductReserveInfo productInfo = reserveLecture(command, userInfo.userName());
-    Long totalPrice = calculateTotalPrice(productInfo);
+    List<ProductReserveInfo> productInfo = reserveLecture(command, userInfo.userName());
+    Long totalPrice = calculateTotalPriceFromList(productInfo);
     List<OrderItemSpec> itemSpecs = convertOrderItemSpecs(productInfo, OrderItemType.LECTURE);
 
     Order order =
@@ -51,18 +52,18 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   }
 
   @Override
+  @Transactional
   public CreateOrderResult createMentoringOrder(CreateMentoringOrderCommand command) {
     UserInfo userInfo = getUserInfo(command.userId());
     ProductReserveInfo productInfo = reserveMentoring(command, userInfo.userName());
-    Long totalPrice = calculateTotalPrice(productInfo);
-    List<OrderItemSpec> itemSpecs = convertOrderItemSpecs(productInfo, OrderItemType.MENTORING);
+    OrderItemSpec itemSpec = productInfo.toOrderItemSpec(OrderItemType.MENTORING);
 
     Order order =
         Order.create(
             new Orderer(userInfo.userId(), userInfo.userName()),
             null,
-            new OrderPrice(totalPrice, 0L),
-            itemSpecs);
+            new OrderPrice(productInfo.productPrice(), 0L),
+            itemSpec);
 
     order = orderRepository.createOrder(order);
 
@@ -73,7 +74,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     return userReader.getUserInfo(userId);
   }
 
-  private ProductReserveInfo reserveLecture(CreateLectureOrderCommand command, String userName) {
+  private List<ProductReserveInfo> reserveLecture(
+      CreateLectureOrderCommand command, String userName) {
     return lectureProvider.reserveEnrollment(LectureProductReserveData.of(command, userName));
   }
 
@@ -82,12 +84,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     return mentoringProvider.reserveEnrollment(MentoringProductReserveData.of(command, userName));
   }
 
-  private Long calculateTotalPrice(ProductReserveInfo productInfo) {
-    return productInfo.products().stream().mapToLong(ProductItem::productPrice).sum();
+  private Long calculateTotalPriceFromList(List<ProductReserveInfo> productInfo) {
+    return productInfo.stream().mapToLong(ProductReserveInfo::productPrice).sum();
   }
 
   private List<OrderItemSpec> convertOrderItemSpecs(
-      ProductReserveInfo productInfo, OrderItemType type) {
-    return productInfo.products().stream().map(product -> product.toOrderItemSpec(type)).toList();
+      List<ProductReserveInfo> productInfo, OrderItemType type) {
+    return productInfo.stream().map(product -> product.toOrderItemSpec(type)).toList();
   }
 }

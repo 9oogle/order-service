@@ -69,6 +69,20 @@ public class Order extends BaseAudit {
     return order;
   }
 
+  public static Order create(
+      Orderer orderer, Coupon coupon, OrderPrice price, OrderItemSpec itemSpec) {
+    if (itemSpec == null) {
+      throw new InvalidOrderException(OrderErrorCode.EMPTY_ORDER_ITEMS);
+    }
+    Order order = new Order();
+    order.orderer = orderer;
+    order.coupon = coupon;
+    order.price = price;
+    order.addItem(OrderItem.create(itemSpec.product(), itemSpec.instructor()));
+
+    return order;
+  }
+
   public void pay(String paymentKey, String paymentMethod) {
     this.payment = new Payment(paymentKey, paymentMethod);
     transitionTo(OrderStatus.PAID);

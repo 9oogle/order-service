@@ -5,6 +5,7 @@ import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,12 +15,12 @@ public class LectureClientAdapter implements LectureProvider {
   private final LectureClient lectureClient;
 
   @Override
-  public ProductReserveInfo reserveEnrollment(LectureProductReserveData data) {
+  public List<ProductReserveInfo> reserveEnrollment(LectureProductReserveData data) {
 
-    ReserveProductResponse response =
+    List<ReserveProductResponse> responses =
         lectureClient.reserveEnrollment(
             data.userId(), data.userRole().name(), ReserveLectureRequest.from(data));
 
-    return response.toProductReserveInfo();
+    return responses.stream().map(ReserveProductResponse::toProductItem).toList();
   }
 }
