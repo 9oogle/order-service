@@ -4,6 +4,8 @@ import com.goggles.orderservice.application.dto.external.CancelLectureEnrollment
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.port.out.LectureProvider;
+import com.goggles.orderservice.infrastructure.client.dto.CancelLectureEnrollmentRequest;
+import com.goggles.orderservice.infrastructure.client.dto.CancelMentoringBookingRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
@@ -34,7 +36,9 @@ public class LectureClientAdapter implements LectureProvider {
   }
 
   @Override
-  public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {}
+  public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {
+    lectureClient.cancelLecturesEnrollment(data.userId(), CancelLectureEnrollmentRequest.of(data));
+  }
 
   private List<ProductReserveInfo> reserveEnrollmentFallback(
       LectureProductReserveData data, Exception e) {
