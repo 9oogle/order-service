@@ -1,5 +1,6 @@
 package com.goggles.orderservice.application.dto.result;
 
+import com.goggles.orderservice.domain.model.CancelReason;
 import com.goggles.orderservice.domain.model.Coupon;
 import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.model.OrderPrice;
@@ -18,6 +19,9 @@ public record OrderDetailResult(
     Payment payment,
     LocalDateTime createdAt,
     OrderStatus status,
+    CancelReason cancelReason,
+    String cancelDescription,
+    LocalDateTime canceledAt,
     List<OrderItemSummary> orderItems) {
   public static OrderDetailResult from(Order order) {
     return new OrderDetailResult(
@@ -28,6 +32,9 @@ public record OrderDetailResult(
         order.getPayment(),
         order.getCreatedAt(),
         order.getStatus(),
+        order.getCancelReason(),
+        order.getCancelDescription(),
+        order.getCanceledAt(),
         order.getItems().stream().map(OrderItemSummary::from).toList());
   }
 }

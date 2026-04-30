@@ -1,5 +1,6 @@
 package com.goggles.orderservice.presentation.dto;
 
+import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,6 @@ public record CreateLectureOrderRequest(
 
   public CreateLectureOrderCommand toCommand(UUID userId, String userRole) {
     return new CreateLectureOrderCommand(
-        userId, userRole, this.couponId, this.paymentMethod, this.items);
+        userId, UserRole.from(userRole), this.couponId, this.paymentMethod, this.items);
   }
 }

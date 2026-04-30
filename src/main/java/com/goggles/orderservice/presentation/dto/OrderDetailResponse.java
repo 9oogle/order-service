@@ -20,6 +20,9 @@ public record OrderDetailResponse(
     String paymentMethod,
     LocalDateTime orderDate,
     String orderStatus,
+    String cancelReason,
+    String cancelDescription,
+    LocalDateTime canceledAt,
     List<OrderItemSummaryResponse> orderItems) {
   public static OrderDetailResponse from(OrderDetailResult result) {
     return new OrderDetailResponse(
@@ -36,6 +39,9 @@ public record OrderDetailResponse(
         result.payment() != null ? result.payment().getPaymentMethod() : null,
         result.createdAt(),
         result.status().getDisplayName(),
+        result.cancelReason() != null ? result.cancelReason().name() : null,
+        result.cancelDescription() != null ? result.cancelDescription() : null,
+        result.canceledAt() != null ? result.canceledAt() : null,
         result.orderItems().stream().map(OrderItemSummaryResponse::from).toList());
   }
 }
