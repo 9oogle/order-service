@@ -23,7 +23,6 @@ import com.goggles.orderservice.domain.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -56,8 +55,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       order = orderRepository.createOrder(order);
       return CreateOrderResult.from(order);
     } catch (Exception e) {
-      log.error("[강의 생성 실패] userId: {}, lectureIds: {}, cause: {}",
-          userInfo.userId(), productInfo.stream().map(ProductReserveInfo::productId).toList(), e.getMessage(), e);
+      log.error(
+          "[강의 생성 실패] userId: {}, lectureIds: {}, cause: {}",
+          userInfo.userId(),
+          productInfo.stream().map(ProductReserveInfo::productId).toList(),
+          e.getMessage(),
+          e);
       compensateLectureReservation(productInfo, userInfo.userId());
       throw e;
     }
@@ -71,17 +74,22 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     OrderItemSpec itemSpec = productInfo.toOrderItemSpec(OrderItemType.MENTORING);
 
     try {
-      Order order = Order.create(
-          new Orderer(userInfo.userId(), userInfo.userName()),
-          null,
-          new OrderPrice(productInfo.productPrice(), 0L),
-          itemSpec);
+      Order order =
+          Order.create(
+              new Orderer(userInfo.userId(), userInfo.userName()),
+              null,
+              new OrderPrice(productInfo.productPrice(), 0L),
+              itemSpec);
 
       order = orderRepository.createOrder(order);
       return CreateOrderResult.from(order);
     } catch (Exception e) {
-      log.error("[멘토링 주문 생성 실패] userId: {}, mentoringId: {}, cause: {}",
-          userInfo.userId(), productInfo.enrollmentId(), e.getMessage(), e);
+      log.error(
+          "[멘토링 주문 생성 실패] userId: {}, mentoringId: {}, cause: {}",
+          userInfo.userId(),
+          productInfo.enrollmentId(),
+          e.getMessage(),
+          e);
       compensateMentoringReservation(productInfo, userInfo.userId());
       throw e;
     }
@@ -124,7 +132,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   private void compensateMentoringReservation(ProductReserveInfo productInfo, UUID userId) {
     try {
       mentoringProvider.cancelMentoringBooking(
-          CancelMentoringBookingData.of(userId, productInfo.enrollmentId(), CancelReason.SYSTEM_ERROR));
+          CancelMentoringBookingData.of(
+              userId, productInfo.enrollmentId(), CancelReason.SYSTEM_ERROR));
     } catch (Exception e) {
       log.error("멘토링 예약 보상 트랜잭션 실패. enrollmentId: {}", productInfo.enrollmentId());
       // todo: DLQ 적용

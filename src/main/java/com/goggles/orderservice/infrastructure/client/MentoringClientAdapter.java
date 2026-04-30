@@ -42,7 +42,8 @@ public class MentoringClientAdapter implements MentoringProvider {
     mentoringClient.cancelMentoringBooking(data.userId(), CancelMentoringBookingRequest.of(data));
   }
 
-  private List<ProductReserveInfo> reserveEnrollmentFallback(MentoringProductReserveData data, Exception e) {
+  private List<ProductReserveInfo> reserveEnrollmentFallback(
+      MentoringProductReserveData data, Exception e) {
     log.warn("mentoring-service circuit breaker fallback. cause: {}", e.getMessage());
 
     if (e instanceof CallNotPermittedException) {

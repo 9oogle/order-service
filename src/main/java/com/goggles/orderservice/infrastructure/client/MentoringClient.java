@@ -20,6 +20,5 @@ public interface MentoringClient {
 
   @PostMapping("/internal/v1/mentoring-booking/cancellation")
   void cancelMentoringBooking(
-      @RequestHeader("X-User-Id") UUID userId,
-      @RequestBody CancelMentoringBookingRequest request);
+      @RequestHeader("X-User-Id") UUID userId, @RequestBody CancelMentoringBookingRequest request);
 }

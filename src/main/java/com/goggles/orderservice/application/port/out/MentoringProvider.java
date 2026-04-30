@@ -6,5 +6,6 @@ import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 
 public interface MentoringProvider {
   ProductReserveInfo reserveEnrollment(MentoringProductReserveData data);
+
   void cancelMentoringBooking(CancelMentoringBookingData data);
 }

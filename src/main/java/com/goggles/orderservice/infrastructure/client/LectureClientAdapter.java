@@ -34,11 +34,10 @@ public class LectureClientAdapter implements LectureProvider {
   }
 
   @Override
-  public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {
+  public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {}
 
-  }
-
-  private List<ProductReserveInfo> reserveEnrollmentFallback(LectureProductReserveData data, Exception e) {
+  private List<ProductReserveInfo> reserveEnrollmentFallback(
+      LectureProductReserveData data, Exception e) {
     log.warn("lecture-service fallback. cause: {}", e.getMessage());
 
     if (e instanceof CallNotPermittedException) {

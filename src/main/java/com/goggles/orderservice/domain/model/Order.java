@@ -1,7 +1,6 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
-import com.goggles.common.exception.BadRequestException;
 import com.goggles.orderservice.application.common.CancelReason;
 import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
