@@ -1,6 +1,8 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
+import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.application.common.CancelReason;
 import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.NotFoundOrderItemException;
@@ -15,6 +17,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +44,15 @@ public class Order extends BaseAudit {
   @Embedded private OrderPrice price;
 
   @Embedded private Payment payment = null;
+
+  @Column(name = "cancel_reason", length = 20)
+  private CancelReason cancelReason;
+
+  @Column(name = "cancel_description", length = 100)
+  private String cancelDescription;
+
+  @Column(name = "canceled_at")
+  private LocalDateTime canceledAt;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
@@ -96,8 +108,11 @@ public class Order extends BaseAudit {
     transitionTo(OrderStatus.PAYMENT_FAILED);
   }
 
-  public void cancel() {
-    transitionTo(OrderStatus.CANCELED);
+  public void cancel(CancelReason reason, String description) {
+    this.cancelReason = reason;
+    this.cancelDescription = description;
+    this.canceledAt = LocalDateTime.now();
+    transitionTo(OrderStatus.PAYMENT_FAILED);
   }
 
   public void cancelItem(UUID itemId) {
