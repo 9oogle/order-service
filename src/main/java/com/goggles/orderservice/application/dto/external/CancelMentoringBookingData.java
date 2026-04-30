@@ -8,11 +8,11 @@ public record CancelMentoringBookingData(
     UUID mentoringBookingId,
     CancelReason cancelReason
 ) {
-  public static CancelMentoringBookingData of(UUID userId, UUID mentoringBookingId, String cancelReason) {
+  public static CancelMentoringBookingData of(UUID userId, UUID mentoringBookingId, CancelReason cancelReason) {
     return new CancelMentoringBookingData(
         userId,
         mentoringBookingId,
-        CancelReason.from(cancelReason)
+        cancelReason
     );
   }
 }
