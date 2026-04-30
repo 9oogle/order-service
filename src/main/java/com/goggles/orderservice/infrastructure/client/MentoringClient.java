@@ -5,6 +5,7 @@ import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringReques
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -18,7 +19,7 @@ public interface MentoringClient {
       @RequestHeader("X-User-Name") String userName,
       @RequestBody ReserveMentoringRequest request);
 
-  @PostMapping("/internal/v1/mentoring-booking/cancellation")
+  @PatchMapping("/internal/v1/mentoring-booking/cancellation")
   void cancelMentoringBooking(
       @RequestHeader("X-User-Id") UUID userId, @RequestBody CancelMentoringBookingRequest request);
 }
