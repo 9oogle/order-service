@@ -10,6 +10,7 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
 
+
   jpa:
     properties:
       hibernate:
@@ -21,6 +22,124 @@ spring:
       ddl-auto: update
     open-in-view: false
     generate-ddl: true
+
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+feign:
+  client:
+    default:
+      connectTimeout: 5000
+      readTimeout: 2000
+      loggerLevel: full
+
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default-read:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+
+        slowCallDurationThreshold: 3s    # 3초 이상이면 느린 호출로 간주
+        slowCallRateThreshold: 50        # 느린 호출이 50% 이상이면 차단
+        permittedNumberOfCallsInHalfOpenState: 2  # 반개방 상태 테스트 호출 수
+        automaticTransitionFromOpenToHalfOpenEnabled: true  # 자동 전환
+        eventConsumerBufferSize: 10
+
+        recordExceptions:
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+          - feign.RetryableException
+        ignoreExceptions:
+          # common business exception
+          - com.goggles.common.exception.BadRequestException
+          - com.goggles.common.exception.ConflictException
+          - com.goggles.common.exception.ForbiddenException
+          - com.goggles.common.exception.NotFoundException
+          - com.goggles.common.exception.UnAuthorizedException
+
+          # Spring/Jakarta validation exception
+          - org.springframework.web.bind.MethodArgumentNotValidException
+          - jakarta.validation.ConstraintViolationException
+          - org.springframework.http.converter.HttpMessageNotReadableException
+          - java.lang.IllegalArgumentException
+
+      default-write:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 30
+        waitDurationInOpenState: 60s
+
+        slowCallDurationThreshold: 3s    # 3초 이상이면 느린 호출로 간주
+        slowCallRateThreshold: 50        # 느린 호출이 50% 이상이면 차단
+        permittedNumberOfCallsInHalfOpenState: 2  # 반개방 상태 테스트 호출 수
+        automaticTransitionFromOpenToHalfOpenEnabled: true  # 자동 전환
+        eventConsumerBufferSize: 10
+
+        recordExceptions:
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+          - feign.RetryableException
+        ignoreExceptions:
+          # common business exception
+          - com.goggles.common.exception.BadRequestException
+          - com.goggles.common.exception.ConflictException
+          - com.goggles.common.exception.ForbiddenException
+          - com.goggles.common.exception.NotFoundException
+          - com.goggles.common.exception.UnAuthorizedException
+
+          # Spring/Jakarta validation exception
+          - org.springframework.web.bind.MethodArgumentNotValidException
+          - jakarta.validation.ConstraintViolationException
+          - org.springframework.http.converter.HttpMessageNotReadableException
+          - java.lang.IllegalArgumentException
+
+    instances:
+      lecture-service-write:
+        baseConfig: default-write
+      mentoring-service-write:
+        baseConfig: default-write
+      user-service-read:
+        baseConfig: default-read
+
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2.0
+        retryExceptions:
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+          - feign.RetryableException
+        ignoreExceptions:
+          # common business exception
+          - com.goggles.common.exception.BadRequestException
+          - com.goggles.common.exception.ConflictException
+          - com.goggles.common.exception.ForbiddenException
+          - com.goggles.common.exception.NotFoundException
+          - com.goggles.common.exception.UnAuthorizedException
+
+          # Spring/Jakarta validation exception
+          - org.springframework.web.bind.MethodArgumentNotValidException
+          - jakarta.validation.ConstraintViolationException
+          - org.springframework.http.converter.HttpMessageNotReadableException
+          - java.lang.IllegalArgumentException
+    instances:
+      lecture-service-write:
+        baseConfig: default
+      mentoring-service-write:
+        baseConfig: default
+      user-service-read:
+        baseConfig: default
 
 server:
   port: 9007
