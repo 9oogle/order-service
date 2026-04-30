@@ -1,6 +1,6 @@
 package com.goggles.orderservice.application.dto.external;
 
-import com.goggles.orderservice.application.common.CancelReason;
+import com.goggles.orderservice.domain.model.CancelReason;
 import java.util.UUID;
 
 public record CancelMentoringBookingData(

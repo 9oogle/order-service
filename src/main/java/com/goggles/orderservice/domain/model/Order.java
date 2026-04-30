@@ -1,7 +1,6 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
-import com.goggles.orderservice.application.common.CancelReason;
 import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.NotFoundOrderItemException;
@@ -44,6 +43,7 @@ public class Order extends BaseAudit {
 
   @Embedded private Payment payment = null;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "cancel_reason", length = 20)
   private CancelReason cancelReason;
 
@@ -111,7 +111,7 @@ public class Order extends BaseAudit {
     this.cancelReason = reason;
     this.cancelDescription = description;
     this.canceledAt = LocalDateTime.now();
-    transitionTo(OrderStatus.PAYMENT_FAILED);
+    transitionTo(OrderStatus.CANCELED);
   }
 
   public void cancelItem(UUID itemId) {

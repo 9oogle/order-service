@@ -1,6 +1,6 @@
 package com.goggles.orderservice.application.dto.result;
 
-import com.goggles.orderservice.application.common.CancelReason;
+import com.goggles.orderservice.domain.model.CancelReason;
 import com.goggles.orderservice.domain.model.Coupon;
 import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.model.OrderPrice;

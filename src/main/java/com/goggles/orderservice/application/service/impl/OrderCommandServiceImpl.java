@@ -1,6 +1,6 @@
 package com.goggles.orderservice.application.service.impl;
 
-import com.goggles.orderservice.application.common.CancelReason;
+import com.goggles.orderservice.domain.model.CancelReason;
 import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.external.CancelLectureEnrollmentData;
