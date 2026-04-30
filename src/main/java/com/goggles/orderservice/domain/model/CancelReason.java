@@ -15,7 +15,7 @@ public enum CancelReason {
     try {
       return CancelReason.valueOf(value.toUpperCase());
     } catch (IllegalArgumentException e) {
-      throw new BadRequestException("유효하지 취소 원인입니다: " + value);
+      throw new BadRequestException("유효하지 않은 취소 원인입니다: " + value);
     }
   }
 }
