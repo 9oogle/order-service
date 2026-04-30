@@ -1,8 +1,10 @@
 package com.goggles.orderservice.infrastructure.client;
 
+import com.goggles.orderservice.application.dto.external.CancelMentoringBookingData;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
+import com.goggles.orderservice.infrastructure.client.dto.CancelMentoringBookingRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
@@ -33,6 +35,11 @@ public class MentoringClientAdapter implements MentoringProvider {
             ReserveMentoringRequest.from(data));
 
     return response.toProductItem();
+  }
+
+  @Override
+  public void cancelMentoringBooking(CancelMentoringBookingData data) {
+    mentoringClient.cancelMentoringBooking(data.userId(), CancelMentoringBookingRequest.of(data));
   }
 
   private List<ProductReserveInfo> reserveEnrollmentFallback(MentoringProductReserveData data, Exception e) {

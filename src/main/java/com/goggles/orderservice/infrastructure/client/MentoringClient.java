@@ -1,5 +1,6 @@
 package com.goggles.orderservice.infrastructure.client;
 
+import com.goggles.orderservice.infrastructure.client.dto.CancelMentoringBookingRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import java.util.UUID;
@@ -16,4 +17,9 @@ public interface MentoringClient {
       @RequestHeader("X-User-Role") String userRole,
       @RequestHeader("X-User-Name") String userName,
       @RequestBody ReserveMentoringRequest request);
+
+  @PostMapping("/internal/v1/mentoring-booking/cancellation")
+  void cancelMentoringBooking(
+      @RequestHeader("X-User-Id") UUID userId,
+      @RequestBody CancelMentoringBookingRequest request);
 }
