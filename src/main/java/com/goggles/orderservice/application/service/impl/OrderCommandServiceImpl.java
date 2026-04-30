@@ -118,11 +118,13 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     return productInfo.stream().map(product -> product.toOrderItemSpec(type)).toList();
   }
 
-  private void compensateLectureReservation(List<ProductReserveInfo> productInfo, UUID userId, String userRole) {
+  private void compensateLectureReservation(
+      List<ProductReserveInfo> productInfo, UUID userId, String userRole) {
     List<UUID> enrollmentIds = productInfo.stream().map(ProductReserveInfo::enrollmentId).toList();
     try {
       lectureProvider.cancelLectureEnrollment(
-          CancelLectureEnrollmentData.of(userId, userRole, enrollmentIds, CancelReason.SYSTEM_ERROR));
+          CancelLectureEnrollmentData.of(
+              userId, userRole, enrollmentIds, CancelReason.SYSTEM_ERROR));
     } catch (Exception e) {
       log.error("강의 예약 보상 트랜잭션 실패. enrollmentIds: {}", enrollmentIds);
       // todo: DLQ 적용
