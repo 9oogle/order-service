@@ -1,5 +1,6 @@
 package com.goggles.orderservice.application.service.impl;
 
+import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.external.CancelLectureEnrollmentData;
@@ -90,7 +91,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           productInfo.enrollmentId(),
           e.getMessage(),
           e);
-      compensateMentoringReservation(productInfo, userInfo.userId());
+      compensateMentoringReservation(productInfo, userInfo.userId(), command.userRole());
       throw e;
     }
   }
@@ -119,7 +120,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   }
 
   private void compensateLectureReservation(
-      List<ProductReserveInfo> productInfo, UUID userId, String userRole) {
+      List<ProductReserveInfo> productInfo, UUID userId, UserRole userRole) {
     List<UUID> enrollmentIds = productInfo.stream().map(ProductReserveInfo::enrollmentId).toList();
     try {
       lectureProvider.cancelLectureEnrollment(
@@ -131,11 +132,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     }
   }
 
-  private void compensateMentoringReservation(ProductReserveInfo productInfo, UUID userId) {
+  private void compensateMentoringReservation(
+      ProductReserveInfo productInfo, UUID userId, UserRole userRole) {
     try {
       mentoringProvider.cancelMentoringBooking(
           CancelMentoringBookingData.of(
-              userId, productInfo.enrollmentId(), CancelReason.SYSTEM_ERROR));
+              userId, userRole, productInfo.enrollmentId(), CancelReason.SYSTEM_ERROR));
     } catch (Exception e) {
       log.error("멘토링 예약 보상 트랜잭션 실패. enrollmentId: {}", productInfo.enrollmentId());
       // todo: DLQ 적용

@@ -1,5 +1,6 @@
 package com.goggles.orderservice.presentation.dto;
 
+import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +26,7 @@ public record CreateMentoringOrderRequest(
   public CreateMentoringOrderCommand toCommand(UUID userId, String userRole) {
     return new CreateMentoringOrderCommand(
         userId,
-        userRole,
+        UserRole.from(userRole),
         this.mentoringId,
         this.requestMessage,
         this.couponId,

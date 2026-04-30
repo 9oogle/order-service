@@ -1,5 +1,6 @@
 package com.goggles.orderservice.application.dto.command;
 
+import com.goggles.orderservice.application.common.UserRole;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.UUID;
 
 public record CreateMentoringOrderCommand(
     UUID userId,
-    String userRole,
+    UserRole userRole,
     UUID mentoringId,
     String requestMessage,
     UUID couponId,

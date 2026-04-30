@@ -54,7 +54,7 @@ public class LectureClientAdapter implements LectureProvider {
   @Retry(name = "lecture-service-cancel")
   public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {
     lectureClient.cancelLecturesEnrollment(
-        data.userId(), data.userRole(), CancelLectureEnrollmentRequest.of(data));
+        data.userId(), data.userRole().name(), CancelLectureEnrollmentRequest.of(data));
   }
 
   private void cancelLectureEnrollmentFallback(CancelLectureEnrollmentData data, Exception e) {

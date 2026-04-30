@@ -55,7 +55,11 @@ public class MentoringClientAdapter implements MentoringProvider {
       fallbackMethod = "cancelMentoringBookingFallback")
   @Retry(name = "mentoring-service-cancel")
   public void cancelMentoringBooking(CancelMentoringBookingData data) {
-    mentoringClient.cancelMentoringBooking(data.userId(), CancelMentoringBookingRequest.of(data));
+    mentoringClient.cancelMentoringBooking(
+        data.userId(),
+        data.userRole().name(),
+        data.mentoringBookingId(),
+        CancelMentoringBookingRequest.of(data));
   }
 
   private void cancelMentoringBookingFallback(CancelMentoringBookingData data, Exception e) {

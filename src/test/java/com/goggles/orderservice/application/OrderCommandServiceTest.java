@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
@@ -77,7 +78,7 @@ class OrderCommandServiceTest {
 
     private CreateLectureOrderCommand command() {
       return new CreateLectureOrderCommand(
-          USER_ID, USER_ROLE, COUPON_ID, "CARD", List.of(LECTURE_ID));
+          USER_ID, UserRole.from(USER_ROLE), COUPON_ID, "CARD", List.of(LECTURE_ID));
     }
 
     @Test
@@ -165,7 +166,7 @@ class OrderCommandServiceTest {
     private CreateMentoringOrderCommand command() {
       return new CreateMentoringOrderCommand(
           USER_ID,
-          USER_ROLE,
+          UserRole.from(USER_ROLE),
           MENTORING_ID,
           "질문 있어요",
           COUPON_ID,

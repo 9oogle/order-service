@@ -1,12 +1,13 @@
 package com.goggles.orderservice.application.dto.external;
 
+import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.domain.model.CancelReason;
 import java.util.UUID;
 
 public record CancelMentoringBookingData(
-    UUID userId, UUID mentoringBookingId, CancelReason cancelReason) {
+    UUID userId, UserRole userRole, UUID mentoringBookingId, CancelReason cancelReason) {
   public static CancelMentoringBookingData of(
-      UUID userId, UUID mentoringBookingId, CancelReason cancelReason) {
-    return new CancelMentoringBookingData(userId, mentoringBookingId, cancelReason);
+      UUID userId, UserRole userRole, UUID mentoringBookingId, CancelReason cancelReason) {
+    return new CancelMentoringBookingData(userId, userRole, mentoringBookingId, cancelReason);
   }
 }
