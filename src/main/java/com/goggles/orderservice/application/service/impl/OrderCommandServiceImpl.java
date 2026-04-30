@@ -118,7 +118,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     return productInfo.stream().map(product -> product.toOrderItemSpec(type)).toList();
   }
 
-  private void compensateLectureReservation(List<ProductReserveInfo> productInfo, UUID userId, String userRole) {
+  private void compensateLectureReservation(
+      List<ProductReserveInfo> productInfo, UUID userId, String userRole) {
     List<UUID> productIds = productInfo.stream().map(ProductReserveInfo::productId).toList();
     try {
       lectureProvider.cancelLectureEnrollment(

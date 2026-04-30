@@ -16,6 +16,6 @@ public class CancelLectureEnrollmentRequest {
 
   public static CancelLectureEnrollmentRequest of(CancelLectureEnrollmentData data) {
     return new CancelLectureEnrollmentRequest(
-        data.mentoringBookingIds(), data.cancelReason().name());
+        data.LectureEnrollmentIds(), data.cancelReason().name());
   }
 }
