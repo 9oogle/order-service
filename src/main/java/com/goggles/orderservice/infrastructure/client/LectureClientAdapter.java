@@ -35,11 +35,6 @@ public class LectureClientAdapter implements LectureProvider {
     return responses.stream().map(ReserveProductResponse::toProductItem).toList();
   }
 
-  @Override
-  public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {
-    lectureClient.cancelLecturesEnrollment(data.userId(), CancelLectureEnrollmentRequest.of(data));
-  }
-
   private List<ProductReserveInfo> reserveEnrollmentFallback(
       LectureProductReserveData data, Exception e) {
     log.warn("lecture-service fallback. cause: {}", e.getMessage());
@@ -51,5 +46,23 @@ public class LectureClientAdapter implements LectureProvider {
       throw new ExternalServiceException("요청 처리 시간이 초과되었습니다. 잠시 후 다시 주문을 시도해주세요.");
     }
     throw new ExternalServiceException("주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  }
+
+  @Override
+  @CircuitBreaker(name = "lecture-service-cancel", fallbackMethod = "cancelLectureEnrollmentFallback")
+  @Retry(name = "lecture-service-cancel")
+  public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {
+    lectureClient.cancelLecturesEnrollment(data.userId(), CancelLectureEnrollmentRequest.of(data));
+  }
+
+  private void cancelLectureEnrollmentFallback(CancelLectureEnrollmentData data, Exception e) {
+    log.error("[강의 등록 취소 보상 트랜잭션 최종 실패] " +
+            "userId: {}, enrollmentId: {}, cancelReason: {}, cause: {}",
+        data.userId(),
+        data.LectureEnrollmentIds(),
+        data.cancelReason(),
+        e.getMessage(), e);
+
+    throw new ExternalServiceException("강의 등록 취소 처리 중 오류가 발생했습니다.");
   }
 }

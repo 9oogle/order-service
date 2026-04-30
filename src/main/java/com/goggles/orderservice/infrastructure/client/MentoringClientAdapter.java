@@ -37,11 +37,6 @@ public class MentoringClientAdapter implements MentoringProvider {
     return response.toProductItem();
   }
 
-  @Override
-  public void cancelMentoringBooking(CancelMentoringBookingData data) {
-    mentoringClient.cancelMentoringBooking(data.userId(), CancelMentoringBookingRequest.of(data));
-  }
-
   private ProductReserveInfo reserveEnrollmentFallback(
       MentoringProductReserveData data, Exception e) {
     log.warn("mentoring-service circuit breaker fallback. cause: {}", e.getMessage());
@@ -53,5 +48,23 @@ public class MentoringClientAdapter implements MentoringProvider {
       throw new ExternalServiceException("요청 처리 시간이 초과되었습니다. 잠시 후 다시 주문을 시도해주세요.");
     }
     throw new ExternalServiceException("주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  }
+
+  @Override
+  @CircuitBreaker(name = "mentoring-service-cancel", fallbackMethod = "cancelMentoringBookingFallback")
+  @Retry(name = "mentoring-service-cancel")
+  public void cancelMentoringBooking(CancelMentoringBookingData data) {
+    mentoringClient.cancelMentoringBooking(data.userId(), CancelMentoringBookingRequest.of(data));
+  }
+
+  private void cancelMentoringBookingFallback(CancelMentoringBookingData data, Exception e) {
+    log.error("[멘토링 취소 보상 트랜잭션 최종 실패] " +
+            "userId: {}, enrollmentId: {}, cancelReason: {}, cause: {}",
+        data.userId(),
+        data.mentoringBookingId(),
+        data.cancelReason(),
+        e.getMessage(), e);
+
+    throw new ExternalServiceException("멘토링 취소 처리 중 오류가 발생했습니다.");
   }
 }
