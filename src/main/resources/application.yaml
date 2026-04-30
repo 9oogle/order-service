@@ -46,15 +46,17 @@ resilience4j:
         failureRateThreshold: 50
         waitDurationInOpenState: 30s
 
-        slowCallDurationThreshold: 3s    # 3초 이상이면 느린 호출로 간주
-        slowCallRateThreshold: 50        # 느린 호출이 50% 이상이면 차단
-        permittedNumberOfCallsInHalfOpenState: 2  # 반개방 상태 테스트 호출 수
-        automaticTransitionFromOpenToHalfOpenEnabled: true  # 자동 전환
+        slowCallDurationThreshold: 3s
+        slowCallRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
         eventConsumerBufferSize: 10
 
         recordExceptions:
           - java.net.SocketTimeoutException
-          - org.springframework.web.client.HttpServerErrorException
+          - feign.FeignException.InternalServerError
+          - feign.FeignException.ServiceUnavailable
+          - feign.FeignException.GatewayTimeout
           - feign.RetryableException
         ignoreExceptions:
           # common business exception
@@ -77,15 +79,17 @@ resilience4j:
         failureRateThreshold: 30
         waitDurationInOpenState: 60s
 
-        slowCallDurationThreshold: 3s    # 3초 이상이면 느린 호출로 간주
-        slowCallRateThreshold: 50        # 느린 호출이 50% 이상이면 차단
-        permittedNumberOfCallsInHalfOpenState: 2  # 반개방 상태 테스트 호출 수
-        automaticTransitionFromOpenToHalfOpenEnabled: true  # 자동 전환
+        slowCallDurationThreshold: 3s
+        slowCallRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
         eventConsumerBufferSize: 10
 
         recordExceptions:
           - java.net.SocketTimeoutException
-          - org.springframework.web.client.HttpServerErrorException
+          - feign.FeignException.InternalServerError
+          - feign.FeignException.ServiceUnavailable
+          - feign.FeignException.GatewayTimeout
           - feign.RetryableException
         ignoreExceptions:
           # common business exception
@@ -118,7 +122,9 @@ resilience4j:
         exponentialBackoffMultiplier: 2.0
         retryExceptions:
           - java.net.SocketTimeoutException
-          - org.springframework.web.client.HttpServerErrorException
+          - feign.FeignException.InternalServerError
+          - feign.FeignException.ServiceUnavailable
+          - feign.FeignException.GatewayTimeout
           - feign.RetryableException
         ignoreExceptions:
           # common business exception
