@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.UUID;
 
 public record CancelLectureEnrollmentData(
-    UUID userId, List<UUID> LectureEnrollmentIds, CancelReason cancelReason) {
+    UUID userId, String userRole, List<UUID> LectureEnrollmentIds, CancelReason cancelReason) {
   public static CancelLectureEnrollmentData of(
-      UUID userId, List<UUID> LectureEnrollmentIds, CancelReason cancelReason) {
-    return new CancelLectureEnrollmentData(userId, LectureEnrollmentIds, cancelReason);
+      UUID userId, String userRole, List<UUID> LectureEnrollmentIds, CancelReason cancelReason) {
+    return new CancelLectureEnrollmentData(userId, userRole, LectureEnrollmentIds, cancelReason);
   }
 }

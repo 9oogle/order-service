@@ -61,7 +61,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           productInfo.stream().map(ProductReserveInfo::productId).toList(),
           e.getMessage(),
           e);
-      compensateLectureReservation(productInfo, userInfo.userId());
+      compensateLectureReservation(productInfo, userInfo.userId(), command.userRole());
       throw e;
     }
   }
@@ -118,11 +118,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     return productInfo.stream().map(product -> product.toOrderItemSpec(type)).toList();
   }
 
-  private void compensateLectureReservation(List<ProductReserveInfo> productInfo, UUID userId) {
+  private void compensateLectureReservation(List<ProductReserveInfo> productInfo, UUID userId, String userRole) {
     List<UUID> productIds = productInfo.stream().map(ProductReserveInfo::productId).toList();
     try {
       lectureProvider.cancelLectureEnrollment(
-          CancelLectureEnrollmentData.of(userId, productIds, CancelReason.SYSTEM_ERROR));
+          CancelLectureEnrollmentData.of(userId, userRole, productIds, CancelReason.SYSTEM_ERROR));
     } catch (Exception e) {
       log.error("강의 예약 보상 트랜잭션 실패. enrollmentId: {}", productIds);
       // todo: DLQ 적용

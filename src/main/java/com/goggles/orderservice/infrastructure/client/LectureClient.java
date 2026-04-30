@@ -20,5 +20,5 @@ public interface LectureClient {
 
   @PostMapping("/internal/v1/lectures-enrollment/cancellation")
   void cancelLecturesEnrollment(
-      @RequestHeader("X-User-Id") UUID userId, @RequestBody CancelLectureEnrollmentRequest request);
+      @RequestHeader("X-User-Id") UUID userId, @RequestHeader("X-User-Role") String userRole, @RequestBody CancelLectureEnrollmentRequest request);
 }
