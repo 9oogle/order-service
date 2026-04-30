@@ -5,7 +5,6 @@ import com.goggles.orderservice.application.dto.external.LectureProductReserveDa
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.infrastructure.client.dto.CancelLectureEnrollmentRequest;
-import com.goggles.orderservice.infrastructure.client.dto.CancelMentoringBookingRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
@@ -49,19 +48,22 @@ public class LectureClientAdapter implements LectureProvider {
   }
 
   @Override
-  @CircuitBreaker(name = "lecture-service-cancel", fallbackMethod = "cancelLectureEnrollmentFallback")
+  @CircuitBreaker(
+      name = "lecture-service-cancel",
+      fallbackMethod = "cancelLectureEnrollmentFallback")
   @Retry(name = "lecture-service-cancel")
   public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {
     lectureClient.cancelLecturesEnrollment(data.userId(), CancelLectureEnrollmentRequest.of(data));
   }
 
   private void cancelLectureEnrollmentFallback(CancelLectureEnrollmentData data, Exception e) {
-    log.error("[강의 등록 취소 보상 트랜잭션 최종 실패] " +
-            "userId: {}, enrollmentId: {}, cancelReason: {}, cause: {}",
+    log.error(
+        "[강의 등록 취소 보상 트랜잭션 최종 실패] " + "userId: {}, enrollmentId: {}, cancelReason: {}, cause: {}",
         data.userId(),
         data.LectureEnrollmentIds(),
         data.cancelReason(),
-        e.getMessage(), e);
+        e.getMessage(),
+        e);
 
     throw new ExternalServiceException("강의 등록 취소 처리 중 오류가 발생했습니다.");
   }

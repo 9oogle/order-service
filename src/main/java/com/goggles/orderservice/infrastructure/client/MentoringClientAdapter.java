@@ -11,7 +11,6 @@ import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceE
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -51,19 +50,22 @@ public class MentoringClientAdapter implements MentoringProvider {
   }
 
   @Override
-  @CircuitBreaker(name = "mentoring-service-cancel", fallbackMethod = "cancelMentoringBookingFallback")
+  @CircuitBreaker(
+      name = "mentoring-service-cancel",
+      fallbackMethod = "cancelMentoringBookingFallback")
   @Retry(name = "mentoring-service-cancel")
   public void cancelMentoringBooking(CancelMentoringBookingData data) {
     mentoringClient.cancelMentoringBooking(data.userId(), CancelMentoringBookingRequest.of(data));
   }
 
   private void cancelMentoringBookingFallback(CancelMentoringBookingData data, Exception e) {
-    log.error("[멘토링 취소 보상 트랜잭션 최종 실패] " +
-            "userId: {}, enrollmentId: {}, cancelReason: {}, cause: {}",
+    log.error(
+        "[멘토링 취소 보상 트랜잭션 최종 실패] " + "userId: {}, enrollmentId: {}, cancelReason: {}, cause: {}",
         data.userId(),
         data.mentoringBookingId(),
         data.cancelReason(),
-        e.getMessage(), e);
+        e.getMessage(),
+        e);
 
     throw new ExternalServiceException("멘토링 취소 처리 중 오류가 발생했습니다.");
   }
