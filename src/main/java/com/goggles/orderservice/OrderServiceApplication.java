@@ -10,14 +10,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 @EnableFeignClients
 @EnableJpaAuditing(auditorAwareRef = "auditorAwareImpl")
-@EntityScan(basePackages = {
-    "com.goggles.orderservice",
-    "com.goggles.common"
-})
-@EnableJpaRepositories(basePackages = {
-    "com.goggles.orderservice",
-    "com.goggles.common"
-})
+@EntityScan(basePackages = {"com.goggles.orderservice", "com.goggles.common"})
+@EnableJpaRepositories(basePackages = {"com.goggles.orderservice", "com.goggles.common"})
 public class OrderServiceApplication {
 
   public static void main(String[] args) {

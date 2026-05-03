@@ -22,11 +22,6 @@ public class OrderEventsImpl implements OrderEvents {
   @Override
   public void orderPaymentPending(OrderPaymentPendingEvent event) {
     log.info("[OrderEvents] orderPaymentPending 호출 - orderId: {}", event.orderId());
-    events.trigger(
-        event.orderId().toString(),
-        DOMAIN,
-        orderTopics.paymentPending(),
-        event
-    );
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.paymentPending(), event);
   }
 }

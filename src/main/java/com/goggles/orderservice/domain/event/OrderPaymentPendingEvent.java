@@ -9,17 +9,17 @@ public record OrderPaymentPendingEvent(
     UUID customerId,
     String customerName,
     String customerEmail,
-    String orderName
-) {
+    String orderName) {
   public static OrderPaymentPendingEvent from(Order order) {
     String buildOrderName;
-    if (order.getItems().size() > 1){
+    if (order.getItems().size() > 1) {
       buildOrderName =
-          order.getItems().getFirst().getProduct().getProductName() + "외 " +
-              (order.getItems().size() - 1) + "건";
+          order.getItems().getFirst().getProduct().getProductName()
+              + "외 "
+              + (order.getItems().size() - 1)
+              + "건";
     } else {
-      buildOrderName =
-          order.getItems().getFirst().getProduct().getProductName();
+      buildOrderName = order.getItems().getFirst().getProduct().getProductName();
     }
     return new OrderPaymentPendingEvent(
         order.getId(),
@@ -27,7 +27,6 @@ public record OrderPaymentPendingEvent(
         order.getOrderer().getStudentId(),
         order.getOrderer().getStudentName(),
         order.getOrderer().getStudentEmail(),
-        buildOrderName
-    );
+        buildOrderName);
   }
 }

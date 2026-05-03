@@ -15,22 +15,26 @@ import org.springframework.kafka.core.KafkaTemplate;
 public class OutboxConfiguration {
 
   @Bean
-  public OutboxStatusUpdater outboxStatusUpdater(OutboxRepository outboxRepository,
-      KafkaTemplate<String, Object> kafkaTemplate) {
+  public OutboxStatusUpdater outboxStatusUpdater(
+      OutboxRepository outboxRepository, KafkaTemplate<String, Object> kafkaTemplate) {
     return new OutboxStatusUpdater(outboxRepository, kafkaTemplate);
   }
 
   @Bean
-  public OutboxEventListener outboxEventListener(OutboxRepository outboxRepository,
-      KafkaTemplate<String, Object> kafkaTemplate, ObjectMapper objectMapper,
+  public OutboxEventListener outboxEventListener(
+      OutboxRepository outboxRepository,
+      KafkaTemplate<String, Object> kafkaTemplate,
+      ObjectMapper objectMapper,
       OutboxStatusUpdater outboxStatusUpdater) {
-    return new OutboxEventListener(outboxRepository, kafkaTemplate, objectMapper,
-        outboxStatusUpdater);
+    return new OutboxEventListener(
+        outboxRepository, kafkaTemplate, objectMapper, outboxStatusUpdater);
   }
 
   @Bean
-  public OutboxRelayScheduler outboxRelayScheduler(OutboxRepository outboxRepository,
-      KafkaTemplate<String, Object> kafkaTemplate, OutboxStatusUpdater outboxStatusUpdater) {
+  public OutboxRelayScheduler outboxRelayScheduler(
+      OutboxRepository outboxRepository,
+      KafkaTemplate<String, Object> kafkaTemplate,
+      OutboxStatusUpdater outboxStatusUpdater) {
     return new OutboxRelayScheduler(outboxRepository, kafkaTemplate, outboxStatusUpdater);
   }
 }

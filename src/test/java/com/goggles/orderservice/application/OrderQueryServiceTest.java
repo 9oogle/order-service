@@ -70,8 +70,7 @@ public class OrderQueryServiceTest {
                 new OrderItemSpec(
                     new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명"))),
-            orderEvents
-        );
+            orderEvents);
 
     order1 =
         Order.create(
@@ -85,8 +84,7 @@ public class OrderQueryServiceTest {
                 new OrderItemSpec(
                     new Product(UUID.randomUUID(), "GITHUB 강의", 580000L, OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명"))),
-            orderEvents
-        );
+            orderEvents);
 
     ReflectionTestUtils.setField(order, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(order1, "id", UUID.randomUUID());

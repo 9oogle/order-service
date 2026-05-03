@@ -13,7 +13,6 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -26,7 +25,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_order")
@@ -68,7 +66,11 @@ public class Order extends BaseAudit {
   }
 
   public static Order create(
-      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItemSpec> itemSpecs, OrderEvents events) {
+      Orderer orderer,
+      Coupon coupon,
+      OrderPrice price,
+      List<OrderItemSpec> itemSpecs,
+      OrderEvents events) {
     validateItems(itemSpecs);
     Order order = new Order();
     order.id = UUID.randomUUID();
@@ -85,7 +87,11 @@ public class Order extends BaseAudit {
   }
 
   public static Order create(
-      Orderer orderer, Coupon coupon, OrderPrice price, OrderItemSpec itemSpec, OrderEvents events) {
+      Orderer orderer,
+      Coupon coupon,
+      OrderPrice price,
+      OrderItemSpec itemSpec,
+      OrderEvents events) {
     if (itemSpec == null) {
       throw new InvalidOrderException(OrderErrorCode.EMPTY_ORDER_ITEMS);
     }
