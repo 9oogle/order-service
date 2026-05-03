@@ -14,6 +14,7 @@ import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
 import com.goggles.orderservice.application.port.out.UserReader;
 import com.goggles.orderservice.application.service.OrderCommandService;
+import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.model.CancelReason;
 import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.model.OrderItemSpec;
@@ -36,6 +37,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   private final MentoringProvider mentoringProvider;
   private final UserReader userReader;
   private final OrderRepository orderRepository;
+  private final OrderEvents orderEvents;
 
   @Override
   @Transactional
@@ -48,10 +50,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     try {
       Order order =
           Order.create(
-              new Orderer(userInfo.userId(), userInfo.userName()),
+              new Orderer(userInfo.userId(), userInfo.userName(), userInfo.userEmail()),
               null,
               new OrderPrice(totalPrice, 0L),
-              itemSpecs);
+              itemSpecs,
+              orderEvents);
 
       order = orderRepository.createOrder(order);
       return CreateOrderResult.from(order);
@@ -77,10 +80,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     try {
       Order order =
           Order.create(
-              new Orderer(userInfo.userId(), userInfo.userName()),
+              new Orderer(userInfo.userId(), userInfo.userName(), userInfo.userEmail()),
               null,
               new OrderPrice(productInfo.productPrice(), 0L),
-              itemSpec);
+              itemSpec,
+              orderEvents);
 
       order = orderRepository.createOrder(order);
       return CreateOrderResult.from(order);

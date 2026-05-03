@@ -1,6 +1,8 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
+import com.goggles.orderservice.domain.event.OrderEvents;
+import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
 import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.NotFoundOrderItemException;
@@ -33,7 +35,7 @@ import org.hibernate.annotations.UuidGenerator;
 @SQLRestriction("deleted_at IS NULL")
 public class Order extends BaseAudit {
 
-  @Id @GeneratedValue @UuidGenerator private UUID id;
+  @Id private UUID id;
 
   @Embedded private Orderer orderer;
 
@@ -66,9 +68,10 @@ public class Order extends BaseAudit {
   }
 
   public static Order create(
-      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItemSpec> itemSpecs) {
+      Orderer orderer, Coupon coupon, OrderPrice price, List<OrderItemSpec> itemSpecs, OrderEvents events) {
     validateItems(itemSpecs);
     Order order = new Order();
+    order.id = UUID.randomUUID();
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
@@ -76,20 +79,23 @@ public class Order extends BaseAudit {
     for (OrderItemSpec spec : itemSpecs) {
       order.addItem(OrderItem.create(spec.product(), spec.instructor()));
     }
+    events.orderPaymentPending(OrderPaymentPendingEvent.from(order));
 
     return order;
   }
 
   public static Order create(
-      Orderer orderer, Coupon coupon, OrderPrice price, OrderItemSpec itemSpec) {
+      Orderer orderer, Coupon coupon, OrderPrice price, OrderItemSpec itemSpec, OrderEvents events) {
     if (itemSpec == null) {
       throw new InvalidOrderException(OrderErrorCode.EMPTY_ORDER_ITEMS);
     }
     Order order = new Order();
+    order.id = UUID.randomUUID();
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
     order.addItem(OrderItem.create(itemSpec.product(), itemSpec.instructor()));
+    events.orderPaymentPending(OrderPaymentPendingEvent.from(order));
 
     return order;
   }
