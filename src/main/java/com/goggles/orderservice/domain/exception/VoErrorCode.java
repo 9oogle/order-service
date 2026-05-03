@@ -15,6 +15,7 @@ public enum VoErrorCode {
   // StudentInfo
   MISSING_STUDENT_ID("studentId 값은 필수입니다."),
   MISSING_STUDENT_NAME("studentName 값은 필수입니다."),
+  MISSING_STUDENT_EMAIL("studentEmail 값은 필수입니다."),
 
   // PaymentInfo
   MISSING_PAYMENT_KEY("paymentKey 값은 필수입니다."),
