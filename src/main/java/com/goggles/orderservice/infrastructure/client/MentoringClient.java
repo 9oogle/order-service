@@ -1,5 +1,6 @@
 package com.goggles.orderservice.infrastructure.client;
 
+import com.goggles.common.response.ApiResponse;
 import com.goggles.orderservice.infrastructure.client.dto.CancelMentoringBookingRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @FeignClient(name = "mentoring-service")
 public interface MentoringClient {
   @PostMapping("/internal/v1/mentoring-booking")
-  ReserveProductResponse reserveEnrollment(
+  ApiResponse<ReserveProductResponse> reserveEnrollment(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
       @RequestHeader("X-User-Name") String userName,

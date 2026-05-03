@@ -1,5 +1,6 @@
 package com.goggles.orderservice.infrastructure.client;
 
+import com.goggles.common.response.ApiResponse;
 import com.goggles.orderservice.infrastructure.client.dto.CancelLectureEnrollmentRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @FeignClient(name = "lecture-service")
 public interface LectureClient {
   @PostMapping("/internal/v1/lectures-enrollment")
-  List<ReserveProductResponse> reserveEnrollment(
+  ApiResponse<List<ReserveProductResponse>> reserveEnrollment(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
       @RequestBody ReserveLectureRequest request);

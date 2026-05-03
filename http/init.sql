@@ -33,12 +33,22 @@ user_ids uuid[] := ARRAY[
     ];
 
     cancel_reasons varchar[] := ARRAY[
-        '단순 변심',
-        '가격 부담',
-        '다른 강의 선택',
+        'PAYMENT_FAIL',
+        'USER_CANCEL',
+        'SYSTEM_ERROR',
+        'MENTOR_CANCEL',
+        'INSTRUCTOR_CANCEL',
+        'TIMEOUT'
+        ];
+
+    cancel_descs varchar[] := ARRAY[
         '결제 오류',
-        '일정 변경'
-    ];
+        '단순 변심',
+        '시스템 오류',
+        '멘토 취소',
+        '강사 취소',
+        '시간 초과'
+        ];
 
     v_order_id uuid;
     v_user_idx int;
@@ -49,7 +59,8 @@ user_ids uuid[] := ARRAY[
     v_created_at timestamp;
     v_status varchar;
     v_canceled_at timestamp;
-    v_cancel_reason int;
+    v_cancel_reason varchar(20);
+    v_cancel_reason_idx int;
     v_cancel_desc varchar;
 
     i int; j int;
@@ -94,8 +105,9 @@ END;
 
         IF v_status = 'CANCELED' THEN
             v_canceled_at := v_created_at + interval '1 hour' * (floor(random()*48)+1);
-            v_cancel_reason := (floor(random()*5)+1)::int;
-            v_cancel_desc := cancel_reasons[v_cancel_reason];
+            v_cancel_reason_idx := (floor(random()*6)+1)::int;
+            v_cancel_desc := cancel_descs[v_cancel_reason_idx];
+            v_cancel_reason := cancel_reasons[v_cancel_reason_idx];
 END IF;
 
 INSERT INTO order_db.p_order (
