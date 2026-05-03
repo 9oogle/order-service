@@ -1,6 +1,5 @@
 package com.goggles.orderservice.infrastructure.config;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.AuditorAware;
@@ -13,10 +12,17 @@ public class AuditorAwareImpl implements AuditorAware<UUID> {
 
   @Override
   public Optional<UUID> getCurrentAuditor() {
-    HttpServletRequest request =
-        ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-
-    String userId = request.getHeader("X-User-Id");
-    return Optional.ofNullable(userId).map(UUID::fromString);
+    return Optional.ofNullable(RequestContextHolder.getRequestAttributes())
+        .filter(ServletRequestAttributes.class::isInstance)
+        .map(ServletRequestAttributes.class::cast)
+        .map(attrs -> attrs.getRequest().getHeader("X-User-Id"))
+        .filter(userId -> userId != null && !userId.isBlank())
+        .map(userId -> {
+          try {
+            return UUID.fromString(userId);
+          } catch (IllegalArgumentException e) {
+            return null;
+          }
+        });
   }
 }

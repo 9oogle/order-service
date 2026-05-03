@@ -14,12 +14,14 @@ Content-Type: application/json
 
 > {%
   client.test("강의 주문 생성 성공", function() {
-    client.assert(response.status === 200, "응답 코드가 200이어야 합니다.");
-    client.assert(response.body.data.studentId === "550e8400-e29b-41d4-a716-446655440000",
-        "주문자 아이디는 요청과 동일해야 합니다.");
+    client.assert(response.status === 201, "응답 코드가 201이어야 합니다.");
+    client.assert(
+        response.body.data.studentId === client.global.get("userId"),
+        "주문자 아이디는 요청과 동일해야 합니다."
+    );
   });
-
 %}
+
 ### 1-1.주문 목록 전체 조회 (기본 페이징)
 GET http://{{host}}/api/v1/orders?page=0&size=10
 X-User-Id: {{userId}}

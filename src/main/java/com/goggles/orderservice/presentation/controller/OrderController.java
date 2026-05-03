@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -52,6 +54,7 @@ public class OrderController {
   }
 
   @PostMapping("/mentoring")
+  @ResponseStatus(HttpStatus.CREATED)
   public CreateOrderResponse createMentoringOrder(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
@@ -61,6 +64,7 @@ public class OrderController {
   }
 
   @PostMapping("/lecture")
+  @ResponseStatus(HttpStatus.CREATED)
   public CreateOrderResponse createLectureOrder(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
