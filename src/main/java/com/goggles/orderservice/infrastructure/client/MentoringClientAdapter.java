@@ -1,5 +1,6 @@
 package com.goggles.orderservice.infrastructure.client;
 
+import com.goggles.common.response.ApiResponse;
 import com.goggles.orderservice.application.dto.external.CancelMentoringBookingData;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
@@ -26,24 +27,26 @@ public class MentoringClientAdapter implements MentoringProvider {
   @CircuitBreaker(name = "mentoring-service-write", fallbackMethod = "reserveEnrollmentFallback")
   @Retry(name = "mentoring-service-write")
   public ProductReserveInfo reserveEnrollment(MentoringProductReserveData data) {
-    ReserveProductResponse response =
+    ApiResponse<ReserveProductResponse> response =
         mentoringClient.reserveEnrollment(
             data.userId(),
             data.userRole().name(),
             data.userName(),
             ReserveMentoringRequest.from(data));
 
-    return response.toProductItem();
+    return response.data().toProductItem();
   }
 
   private ProductReserveInfo reserveEnrollmentFallback(
-      MentoringProductReserveData data, Exception e) {
-    log.warn("mentoring-service circuit breaker fallback. cause: {}", e.getMessage());
+      MentoringProductReserveData data, Throwable t) {
+    log.warn("mentoring-service fallback. cause: {}", t.getMessage());
+    log.warn("mentoring-service fallback. exception type: {}", t.getClass().getName()); // ← 추가
+    log.warn("mentoring-service fallback. stacktrace: ", t);
 
-    if (e instanceof CallNotPermittedException) {
+    if (t instanceof CallNotPermittedException) {
       throw new ExternalServiceException("현재 서비스가 일시적으로 불안정합니다. 잠시 후 다시 시도해주세요.");
     }
-    if (e instanceof java.net.SocketTimeoutException) {
+    if (t instanceof java.net.SocketTimeoutException) {
       throw new ExternalServiceException("요청 처리 시간이 초과되었습니다. 잠시 후 다시 주문을 시도해주세요.");
     }
     throw new ExternalServiceException("주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
@@ -62,14 +65,14 @@ public class MentoringClientAdapter implements MentoringProvider {
         CancelMentoringBookingRequest.of(data));
   }
 
-  private void cancelMentoringBookingFallback(CancelMentoringBookingData data, Exception e) {
+  private void cancelMentoringBookingFallback(CancelMentoringBookingData data, Throwable t) {
     log.error(
         "[멘토링 취소 보상 트랜잭션 최종 실패] " + "userId: {}, enrollmentId: {}, cancelReason: {}, cause: {}",
         data.userId(),
         data.mentoringBookingId(),
         data.cancelReason(),
-        e.getMessage(),
-        e);
+        t.getMessage(),
+        t);
 
     throw new ExternalServiceException("멘토링 취소 처리 중 오류가 발생했습니다.");
   }
