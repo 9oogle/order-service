@@ -6,6 +6,9 @@ import com.goggles.orderservice.application.dto.query.OrderListQuery;
 import com.goggles.orderservice.application.dto.result.OrderListResult;
 import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.application.service.OrderQueryService;
+import com.goggles.orderservice.presentation.dto.CancelLectureOrderRequest;
+import com.goggles.orderservice.presentation.dto.CancelMentoringOrderRequest;
+import com.goggles.orderservice.presentation.dto.CancelOrderResponse;
 import com.goggles.orderservice.presentation.dto.CreateLectureOrderRequest;
 import com.goggles.orderservice.presentation.dto.CreateMentoringOrderRequest;
 import com.goggles.orderservice.presentation.dto.CreateOrderResponse;
@@ -71,5 +74,23 @@ public class OrderController {
       @Valid @RequestBody CreateLectureOrderRequest request) {
     return CreateOrderResponse.from(
         orderCommandService.createLectureOrder(request.toCommand(userId, userRole)));
+  }
+
+  @PostMapping("/mentoring/cancellation")
+  public CancelOrderResponse cancelMentoringOrder(
+      @RequestHeader("X-User-Id") UUID userId,
+      @RequestHeader("X-User-Role") String userRole,
+      @Valid @RequestBody CancelMentoringOrderRequest request) {
+    return CancelOrderResponse.from(
+        orderCommandService.cancelMentoringOrder(request.toCommand(userId, userRole)));
+  }
+
+  @PostMapping("/lecture/cancellation")
+  public CancelOrderResponse cancelLectureOrder(
+      @RequestHeader("X-User-Id") UUID userId,
+      @RequestHeader("X-User-Role") String userRole,
+      @Valid @RequestBody CancelLectureOrderRequest request) {
+    return CancelOrderResponse.from(
+        orderCommandService.cancelLectureOrder(request.toCommand(userId, userRole)));
   }
 }
