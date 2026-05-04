@@ -11,7 +11,8 @@ public record OrderItemSummaryResponse(
     String productType,
     UUID instructorId,
     String instructorName,
-    String orderItemStatus) {
+    String orderItemStatus,
+    UUID enrollmentId) {
   public static OrderItemSummaryResponse from(OrderItemSummary item) {
     return new OrderItemSummaryResponse(
         item.orderItemId(),
@@ -21,6 +22,7 @@ public record OrderItemSummaryResponse(
         item.product().getProductType().name(),
         item.instructor().getInstructorId(),
         item.instructor().getInstructorName(),
-        item.status().getDisplayName());
+        item.status().getDisplayName(),
+        item.enrollmentId());
   }
 }

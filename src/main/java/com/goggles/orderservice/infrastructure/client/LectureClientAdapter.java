@@ -38,7 +38,7 @@ public class LectureClientAdapter implements LectureProvider {
   private List<ProductReserveInfo> reserveEnrollmentFallback(
       LectureProductReserveData data, Throwable t) {
     log.warn("lecture-service fallback. cause: {}", t.getMessage());
-    log.warn("lecture-service fallback. exception type: {}", t.getClass().getName()); // ← 추가
+    log.warn("lecture-service fallback. exception type: {}", t.getClass().getName());
     log.warn("lecture-service fallback. stacktrace: ", t);
 
     if (t instanceof CallNotPermittedException) {

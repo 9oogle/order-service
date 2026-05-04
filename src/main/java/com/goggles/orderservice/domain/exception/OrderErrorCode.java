@@ -11,7 +11,12 @@ public enum OrderErrorCode {
   EMPTY_ORDER_ITEMS("주문 상품은 최소 1개 이상이어야 합니다."),
   NULL_ORDER_ITEM("주문 상품에 null 값이 포함될 수 없습니다."),
   ALREADY_ASSIGNED_ORDER("이미 주문에 속한 상품입니다."),
-  ALREADY_CANCELED_ORDER_ITEM("이미 취소된 주문 상품입니다.");
+  ALREADY_CANCELED_ORDER_ITEM("이미 취소된 주문 상품입니다."),
+
+  // Order
+  MISSING_ORDER_ORDERER("주문자 정보는 필수입니다."),
+  MISSING_ORDER_ORDER_PRICE("주문 가격은 필수입니다."),
+  MISSING_ORDER_ORDER_EVENTS("주문 이벤트는 필수입니다.");
 
   private final String messageTemplate;
 

@@ -12,6 +12,10 @@ user_ids uuid[] := ARRAY[
         '신혜원', '이호영', '김시온', '한소연', '하지혜'
     ];
 
+    user_emails varchar[] := ARRAY[
+        '신혜원@email.com', '이호영@email.com', '김시온@email.com', '한소연@email.com', '하지혜@email.com'
+    ];
+
     instructors varchar[] := ARRAY[
         '김개발', '박강사', '이튜터', '최멘토', '정코치'
     ];
@@ -111,7 +115,7 @@ END;
 END IF;
 
 INSERT INTO order_db.p_order (
-    id, student_id, student_name,
+    id, student_id, student_name, student_email,
     original_price, discount_amount, final_price,
     status, created_at, updated_at,
     canceled_at, cancel_reason, cancel_description,
@@ -122,6 +126,7 @@ INSERT INTO order_db.p_order (
              v_order_id,
              user_ids[v_user_idx],
              user_names[v_user_idx],
+            user_emails[v_user_idx],
              v_total_price,
              v_discount,
              v_total_price - v_discount,
@@ -163,7 +168,7 @@ INSERT INTO order_db.p_order_item (
     id, order_id, product_id,
     instructor_id, instructor_name,
     product_name, product_price,
-    product_type, status,
+    product_type, status, enrollment_id,
     created_at, updated_at,
     created_by, updated_by
 ) VALUES (
@@ -179,6 +184,7 @@ INSERT INTO order_db.p_order_item (
                  WHEN v_status IN ('CANCELED','PAYMENT_FAILED') THEN 'CANCELED'
                  ELSE 'ACTIVE'
                  END,
+             gen_random_uuid(),
              v_created_at,
              v_created_at,
              user_ids[v_user_idx],

@@ -15,6 +15,7 @@ import com.goggles.orderservice.application.dto.result.OrderDetailResult;
 import com.goggles.orderservice.application.dto.result.OrderItemSummary;
 import com.goggles.orderservice.application.dto.result.OrderListResult;
 import com.goggles.orderservice.application.service.impl.OrderQueryServiceImpl;
+import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.model.Instructor;
 import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.model.OrderItemSpec;
@@ -49,6 +50,7 @@ public class OrderQueryServiceTest {
   @InjectMocks private OrderQueryServiceImpl orderQueryService;
 
   @Mock private OrderRepository orderRepository;
+  @Mock private OrderEvents orderEvents;
 
   private UUID orderId;
   private UUID userId;
@@ -61,26 +63,31 @@ public class OrderQueryServiceTest {
 
     order =
         Order.create(
-            new Orderer(userId, "신혜원"),
+            new Orderer(userId, "신혜원", "hello2@naver.com"),
             null,
             new OrderPrice(110000L, 15000L),
             List.of(
                 new OrderItemSpec(
                     new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.LECTURE),
-                    new Instructor(UUID.randomUUID(), "강사명"))));
+                    new Instructor(UUID.randomUUID(), "강사명"),
+                    UUID.randomUUID())),
+            orderEvents);
 
     order1 =
         Order.create(
-            new Orderer(userId, "신혜원"),
+            new Orderer(userId, "신혜원", "hello2@naver.com"),
             null,
             new OrderPrice(900000L, 5000L),
             List.of(
                 new OrderItemSpec(
                     new Product(UUID.randomUUID(), "스프링 강의", 110000L, OrderItemType.LECTURE),
-                    new Instructor(UUID.randomUUID(), "강사명")),
+                    new Instructor(UUID.randomUUID(), "강사명"),
+                    UUID.randomUUID()),
                 new OrderItemSpec(
                     new Product(UUID.randomUUID(), "GITHUB 강의", 580000L, OrderItemType.LECTURE),
-                    new Instructor(UUID.randomUUID(), "강사명"))));
+                    new Instructor(UUID.randomUUID(), "강사명"),
+                    UUID.randomUUID())),
+            orderEvents);
 
     ReflectionTestUtils.setField(order, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(order1, "id", UUID.randomUUID());

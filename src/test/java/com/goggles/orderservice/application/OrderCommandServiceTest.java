@@ -18,6 +18,8 @@ import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
 import com.goggles.orderservice.application.port.out.UserReader;
 import com.goggles.orderservice.application.service.impl.OrderCommandServiceImpl;
+import com.goggles.orderservice.domain.event.OrderEvents;
+import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
 import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
@@ -42,6 +44,7 @@ class OrderCommandServiceTest {
   @Mock private MentoringProvider mentoringProvider;
   @Mock private UserReader userReader;
   @Mock private OrderRepository orderRepository;
+  @Mock private OrderEvents orderEvents;
 
   private final UUID USER_ID = UUID.randomUUID();
   private final UUID COUPON_ID = UUID.randomUUID();
@@ -50,9 +53,10 @@ class OrderCommandServiceTest {
   private final UUID ORDER_ID = UUID.randomUUID();
   private final String USER_ROLE = "STUDENT";
   private final String USER_NAME = "홍길동";
+  private final String USER_EMAIL = "hello1@naver.com";
 
   private UserInfo userInfo() {
-    return new UserInfo(USER_ID, USER_NAME);
+    return new UserInfo(USER_ID, USER_NAME, USER_EMAIL);
   }
 
   private ProductReserveInfo lectureProductReserveInfo() {
@@ -68,7 +72,7 @@ class OrderCommandServiceTest {
   private Order mockOrder() {
     Order order = mock(Order.class);
     given(order.getId()).willReturn(ORDER_ID);
-    given(order.getOrderer()).willReturn(new Orderer(USER_ID, USER_NAME));
+    given(order.getOrderer()).willReturn(new Orderer(USER_ID, USER_NAME, USER_EMAIL));
     return order;
   }
 
@@ -102,6 +106,8 @@ class OrderCommandServiceTest {
       then(userReader).should().getUserInfo(USER_ID);
       then(lectureProvider).should().reserveEnrollment(any());
       then(orderRepository).should().createOrder(any());
+
+      then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
     }
 
     @Test
@@ -127,6 +133,8 @@ class OrderCommandServiceTest {
       then(orderRepository)
           .should()
           .createOrder(argThat(o -> o.getPrice().getFinalPrice() == 30000L));
+
+      then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
     }
 
     @Test
@@ -197,6 +205,8 @@ class OrderCommandServiceTest {
       then(userReader).should().getUserInfo(USER_ID);
       then(mentoringProvider).should().reserveEnrollment(any());
       then(orderRepository).should().createOrder(any());
+
+      then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
     }
 
     @Test
@@ -217,6 +227,8 @@ class OrderCommandServiceTest {
       then(orderRepository)
           .should()
           .createOrder(argThat(o -> o.getPrice().getFinalPrice() == 50000L));
+
+      then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
     }
 
     @Test

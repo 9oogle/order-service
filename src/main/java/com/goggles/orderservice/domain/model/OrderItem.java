@@ -38,14 +38,18 @@ public class OrderItem extends BaseAudit {
 
   @Embedded private Instructor instructor;
 
+  @Column(name = "enrollment_id", nullable = false, updatable = false)
+  private UUID enrollmentId;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
   private OrderItemStatus status = OrderItemStatus.ACTIVE;
 
-  static OrderItem create(Product product, Instructor instructor) {
+  static OrderItem create(Product product, Instructor instructor, UUID enrollmentId) {
     OrderItem item = new OrderItem();
     item.product = product;
     item.instructor = instructor;
+    item.enrollmentId = enrollmentId;
     return item;
   }
 
