@@ -1,6 +1,8 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
+import com.goggles.orderservice.domain.event.LectureOrderCompletionEvent;
+import com.goggles.orderservice.domain.event.MentoringOrderCompletionEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
 import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
@@ -71,6 +73,9 @@ public class Order extends BaseAudit {
       OrderPrice price,
       List<OrderItemSpec> itemSpecs,
       OrderEvents events) {
+    Objects.requireNonNull(orderer, OrderErrorCode.MISSING_ORDER_ORDERER.getMessage());
+    Objects.requireNonNull(price, OrderErrorCode.MISSING_ORDER_ORDER_PRICE.getMessage());
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     validateItems(itemSpecs);
     Order order = new Order();
     order.id = UUID.randomUUID();
@@ -92,6 +97,9 @@ public class Order extends BaseAudit {
       OrderPrice price,
       OrderItemSpec itemSpec,
       OrderEvents events) {
+    Objects.requireNonNull(orderer, OrderErrorCode.MISSING_ORDER_ORDERER.getMessage());
+    Objects.requireNonNull(price, OrderErrorCode.MISSING_ORDER_ORDER_PRICE.getMessage());
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     if (itemSpec == null) {
       throw new InvalidOrderException(OrderErrorCode.EMPTY_ORDER_ITEMS);
     }
@@ -111,8 +119,20 @@ public class Order extends BaseAudit {
     transitionTo(OrderStatus.PAID);
   }
 
-  public void complete() {
+  public void completeMentoring(OrderEvents events) {
     transitionTo(OrderStatus.COMPLETED);
+    events.mentoringOrderCompleted(
+        new MentoringOrderCompletionEvent(
+            this.id, this.orderer.getStudentId(), this.items.getFirst().getEnrollmentId())
+    );
+  }
+
+  public void completeLecture(OrderEvents events) {
+    transitionTo(OrderStatus.COMPLETED);
+    events.lectureOrderCompleted(
+        new LectureOrderCompletionEvent(
+            this.id, this.orderer.getStudentId(), this.items.stream().map(OrderItem::getEnrollmentId).toList())
+    );
   }
 
   public void failPayment() {
