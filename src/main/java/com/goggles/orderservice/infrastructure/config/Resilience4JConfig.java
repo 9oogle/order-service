@@ -17,69 +17,54 @@ public class Resilience4JConfig {
   private final CircuitBreakerRegistry circuitBreakerRegistry;
 
   @Bean
-  public Customizer<Resilience4JCircuitBreakerFactory> circuitBreakerFactoryCustomizer() {
+  public Customizer<Resilience4JCircuitBreakerFactory> circuitBreakerFactoryCustomizer(
+      CircuitBreakerRegistry circuitBreakerRegistry,
+      TimeLimiterRegistry timeLimiterRegistry) {
+
     return factory -> {
       factory.configure(
-          builder ->
-              builder
-                  .timeLimiterConfig(
-                      timeLimiterRegistry
-                          .getConfiguration("default-write")
-                          .orElse(timeLimiterRegistry.getDefaultConfig()))
-                  .circuitBreakerConfig(
-                      circuitBreakerRegistry
-                          .getConfiguration("default-write")
-                          .orElse(circuitBreakerRegistry.getDefaultConfig()))
-                  .build(),
+          builder -> builder
+              .timeLimiterConfig(timeLimiterRegistry.getConfiguration("default-write")
+                  .orElse(timeLimiterRegistry.getDefaultConfig()))
+              .circuitBreakerConfig(circuitBreakerRegistry.getConfiguration("default-write")
+                  .orElse(circuitBreakerRegistry.getDefaultConfig()))
+              .build(),
           "lecture-service-write",
-          "mentoring-service-write");
-
-      factory.configure(
-          builder ->
-              builder
-                  .timeLimiterConfig(
-                      timeLimiterRegistry
-                          .getConfiguration("default-cancel")
-                          .orElse(timeLimiterRegistry.getDefaultConfig()))
-                  .circuitBreakerConfig(
-                      circuitBreakerRegistry
-                          .getConfiguration("default-cancel")
-                          .orElse(circuitBreakerRegistry.getDefaultConfig()))
-                  .build(),
+          "mentoring-service-write",
           "lecture-service-cancel",
           "mentoring-service-cancel");
 
       factory.configure(
-          builder ->
-              builder
-                  .timeLimiterConfig(
-                      timeLimiterRegistry
-                          .getConfiguration("default-read")
-                          .orElse(timeLimiterRegistry.getDefaultConfig()))
-                  .circuitBreakerConfig(
-                      circuitBreakerRegistry
-                          .getConfiguration("default-read")
-                          .orElse(circuitBreakerRegistry.getDefaultConfig()))
-                  .build(),
+          builder -> builder
+              .timeLimiterConfig(timeLimiterRegistry.getConfiguration("default-rollback")
+                  .orElse(timeLimiterRegistry.getDefaultConfig()))
+              .circuitBreakerConfig(circuitBreakerRegistry.getConfiguration("default-rollback")
+                  .orElse(circuitBreakerRegistry.getDefaultConfig()))
+              .build(),
+          "lecture-service-rollback",
+          "mentoring-service-rollback");
+
+      factory.configure(
+          builder -> builder
+              .timeLimiterConfig(timeLimiterRegistry.getConfiguration("default-read")
+                  .orElse(timeLimiterRegistry.getDefaultConfig()))
+              .circuitBreakerConfig(circuitBreakerRegistry.getConfiguration("default-read")
+                  .orElse(circuitBreakerRegistry.getDefaultConfig()))
+              .build(),
           "user-service-read");
 
-      factory.configureDefault(
-          id -> {
-            String configName =
-                id.contains("write")
-                    ? "default-write"
-                    : id.contains("cancel") ? "default-cancel" : "default-read";
-            return new Resilience4JConfigBuilder(id)
-                .timeLimiterConfig(
-                    timeLimiterRegistry
-                        .getConfiguration(configName)
-                        .orElse(timeLimiterRegistry.getDefaultConfig()))
-                .circuitBreakerConfig(
-                    circuitBreakerRegistry
-                        .getConfiguration(configName)
-                        .orElse(circuitBreakerRegistry.getDefaultConfig()))
-                .build();
-          });
+      factory.configureDefault(id -> {
+        String configName = id.contains("write") || id.contains("cancel")
+            ? "default-write"
+            : id.contains("rollback") ? "default-rollback" : "default-read";
+
+        return new Resilience4JConfigBuilder(id)
+            .timeLimiterConfig(timeLimiterRegistry.getConfiguration(configName)
+                .orElse(timeLimiterRegistry.getDefaultConfig()))
+            .circuitBreakerConfig(circuitBreakerRegistry.getConfiguration(configName)
+                .orElse(circuitBreakerRegistry.getDefaultConfig()))
+            .build();
+      });
     };
   }
 }
