@@ -1,6 +1,8 @@
 package com.goggles.orderservice.infrastructure.event;
 
 import com.goggles.common.event.Events;
+import com.goggles.orderservice.domain.event.LectureOrderCompletionEvent;
+import com.goggles.orderservice.domain.event.MentoringOrderCompletionEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,16 @@ public class OrderEventsImpl implements OrderEvents {
 
   @Override
   public void orderPaymentPending(OrderPaymentPendingEvent event) {
-    log.info("[OrderEvents] orderPaymentPending 호출 - orderId: {}", event.orderId());
     events.trigger(event.orderId().toString(), DOMAIN, orderTopics.paymentPending(), event);
+  }
+
+  @Override
+  public void lectureOrderCompleted(LectureOrderCompletionEvent event) {
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.completed(), event);
+  }
+
+  @Override
+  public void mentoringOrderCompleted(MentoringOrderCompletionEvent event) {
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.completed(), event);
   }
 }
