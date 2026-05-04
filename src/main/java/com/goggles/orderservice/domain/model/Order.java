@@ -123,16 +123,16 @@ public class Order extends BaseAudit {
     transitionTo(OrderStatus.COMPLETED);
     events.mentoringOrderCompleted(
         new MentoringOrderCompletionEvent(
-            this.id, this.orderer.getStudentId(), this.items.getFirst().getEnrollmentId())
-    );
+            this.id, this.orderer.getStudentId(), this.items.getFirst().getEnrollmentId()));
   }
 
   public void completeLecture(OrderEvents events) {
     transitionTo(OrderStatus.COMPLETED);
     events.lectureOrderCompleted(
         new LectureOrderCompletionEvent(
-            this.id, this.orderer.getStudentId(), this.items.stream().map(OrderItem::getEnrollmentId).toList())
-    );
+            this.id,
+            this.orderer.getStudentId(),
+            this.items.stream().map(OrderItem::getEnrollmentId).toList()));
   }
 
   public void failPayment() {

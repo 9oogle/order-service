@@ -7,9 +7,17 @@ import com.goggles.orderservice.domain.model.Product;
 import java.util.UUID;
 
 public record OrderItemSummary(
-    UUID orderItemId, Product product, Instructor instructor, OrderItemStatus status, UUID enrollmentId) {
+    UUID orderItemId,
+    Product product,
+    Instructor instructor,
+    OrderItemStatus status,
+    UUID enrollmentId) {
   public static OrderItemSummary from(OrderItem item) {
     return new OrderItemSummary(
-        item.getId(), item.getProduct(), item.getInstructor(), item.getStatus(), item.getEnrollmentId());
+        item.getId(),
+        item.getProduct(),
+        item.getInstructor(),
+        item.getStatus(),
+        item.getEnrollmentId());
   }
 }

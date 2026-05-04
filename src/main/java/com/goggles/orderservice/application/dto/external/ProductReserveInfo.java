@@ -18,7 +18,6 @@ public record ProductReserveInfo(
     return new OrderItemSpec(
         new Product(productId(), productName(), productPrice(), type),
         new Instructor(instructorId(), instructorName()),
-        enrollmentId
-    );
+        enrollmentId);
   }
 }
