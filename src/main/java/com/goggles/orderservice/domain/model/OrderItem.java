@@ -38,6 +38,9 @@ public class OrderItem extends BaseAudit {
 
   @Embedded private Instructor instructor;
 
+  @Column(name = "enrollment_id")
+  private UUID enrollmentId;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
   private OrderItemStatus status = OrderItemStatus.ACTIVE;
