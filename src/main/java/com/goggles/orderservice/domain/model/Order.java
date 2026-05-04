@@ -84,7 +84,7 @@ public class Order extends BaseAudit {
     order.price = price;
 
     for (OrderItemSpec spec : itemSpecs) {
-      order.addItem(OrderItem.create(spec.product(), spec.instructor()));
+      order.addItem(OrderItem.create(spec.product(), spec.instructor(), spec.enrollmentId()));
     }
     events.orderPaymentPending(OrderPaymentPendingEvent.from(order));
 
@@ -108,7 +108,8 @@ public class Order extends BaseAudit {
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
-    order.addItem(OrderItem.create(itemSpec.product(), itemSpec.instructor()));
+    order.addItem(
+        OrderItem.create(itemSpec.product(), itemSpec.instructor(), itemSpec.enrollmentId()));
     events.orderPaymentPending(OrderPaymentPendingEvent.from(order));
 
     return order;
@@ -120,6 +121,7 @@ public class Order extends BaseAudit {
   }
 
   public void completeMentoring(OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     transitionTo(OrderStatus.COMPLETED);
     events.mentoringOrderCompleted(
         new MentoringOrderCompletionEvent(
@@ -127,6 +129,7 @@ public class Order extends BaseAudit {
   }
 
   public void completeLecture(OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     transitionTo(OrderStatus.COMPLETED);
     events.lectureOrderCompleted(
         new LectureOrderCompletionEvent(
