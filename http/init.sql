@@ -168,7 +168,7 @@ INSERT INTO order_db.p_order_item (
     id, order_id, product_id,
     instructor_id, instructor_name,
     product_name, product_price,
-    product_type, status,
+    product_type, status, enrollment_id,
     created_at, updated_at,
     created_by, updated_by
 ) VALUES (
@@ -184,6 +184,7 @@ INSERT INTO order_db.p_order_item (
                  WHEN v_status IN ('CANCELED','PAYMENT_FAILED') THEN 'CANCELED'
                  ELSE 'ACTIVE'
                  END,
+             gen_random_uuid(),
              v_created_at,
              v_created_at,
              user_ids[v_user_idx],
