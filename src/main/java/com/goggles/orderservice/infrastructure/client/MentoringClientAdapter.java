@@ -40,7 +40,7 @@ public class MentoringClientAdapter implements MentoringProvider {
   private ProductReserveInfo reserveEnrollmentFallback(
       MentoringProductReserveData data, Throwable t) {
     log.warn("mentoring-service fallback. cause: {}", t.getMessage());
-    log.warn("mentoring-service fallback. exception type: {}", t.getClass().getName()); // ← 추가
+    log.warn("mentoring-service fallback. exception type: {}", t.getClass().getName());
     log.warn("mentoring-service fallback. stacktrace: ", t);
 
     if (t instanceof CallNotPermittedException) {
