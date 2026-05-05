@@ -120,8 +120,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
       order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription());
+      lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
@@ -135,13 +135,14 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   }
 
   @Override
+  @Transactional
   public CancelOrderResult cancelMentoringOrder(CancelMentoringOrderCommand command) {
     UserInfo userInfo = getUserInfo(command.userId());
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
       order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription());
+      mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
