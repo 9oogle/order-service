@@ -84,7 +84,7 @@ public class LectureClientAdapter implements LectureProvider {
       fallbackMethod = "rollbackLectureEnrollmentFallback")
   @Retry(name = "lecture-service-rollback")
   public void rollbackLectureEnrollment(RollbackLectureEnrollmentData data) {
-    lectureClient.rollbackLecturesEnrollment(
+    lectureClient.rollbackLectureEnrollment(
         data.userId(), data.userRole().name(), RollbackLectureEnrollmentRequest.from(data));
   }
 

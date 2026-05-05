@@ -21,7 +21,7 @@ public interface LectureClient {
       @RequestBody ReserveLectureRequest request);
 
   @PostMapping("/internal/v1/lectures-enrollment/rollback")
-  void rollbackLecturesEnrollment(
+  void rollbackLectureEnrollment(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
       @RequestBody RollbackLectureEnrollmentRequest request);
