@@ -4,10 +4,7 @@ import com.goggles.orderservice.application.dto.external.CancelMentoringBookingD
 import java.util.UUID;
 
 public record CancelMentoringBookingRequest(
-    UUID orderId,
-    String cancelReason,
-    String cancelDescription
-){
+    UUID orderId, String cancelReason, String cancelDescription) {
   public static CancelMentoringBookingRequest from(CancelMentoringBookingData data) {
     return new CancelMentoringBookingRequest(
         data.orderId(), data.cancelReason(), data.cancelDescription());

@@ -39,7 +39,11 @@ public class LectureClientAdapter implements LectureProvider {
 
   private List<ProductReserveInfo> reserveEnrollmentFallback(
       LectureProductReserveData data, Throwable t) {
-    log.warn("lecture-service reserve fallback. type: {}, cause: {}", t.getClass().getName(), t.getMessage(), t);
+    log.warn(
+        "lecture-service reserve fallback. type: {}, cause: {}",
+        t.getClass().getName(),
+        t.getMessage(),
+        t);
 
     if (t instanceof CallNotPermittedException) {
       throw new ExternalServiceException("현재 서비스가 일시적으로 불안정합니다. 잠시 후 다시 시도해주세요.");
@@ -51,7 +55,9 @@ public class LectureClientAdapter implements LectureProvider {
   }
 
   @Override
-  @CircuitBreaker(name = "lecture-service-cancel", fallbackMethod = "cancelLectureEnrollmentFallback")
+  @CircuitBreaker(
+      name = "lecture-service-cancel",
+      fallbackMethod = "cancelLectureEnrollmentFallback")
   @Retry(name = "lecture-service-cancel")
   public void cancelLectureEnrollment(CancelLectureEnrollmentData data) {
     lectureClient.cancelLectureEnrollment(
@@ -74,7 +80,8 @@ public class LectureClientAdapter implements LectureProvider {
 
   @Override
   @CircuitBreaker(
-      name = "lecture-service-rollback", fallbackMethod = "rollbackLectureEnrollmentFallback")
+      name = "lecture-service-rollback",
+      fallbackMethod = "rollbackLectureEnrollmentFallback")
   @Retry(name = "lecture-service-rollback")
   public void rollbackLectureEnrollment(RollbackLectureEnrollmentData data) {
     lectureClient.rollbackLecturesEnrollment(
@@ -92,5 +99,4 @@ public class LectureClientAdapter implements LectureProvider {
 
     throw new ExternalServiceException("강의 등록 취소 처리 중 오류가 발생했습니다.");
   }
-
 }
