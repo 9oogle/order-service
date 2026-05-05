@@ -28,6 +28,7 @@ import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
+import com.goggles.orderservice.domain.util.OrderNameBuilder;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
@@ -64,7 +65,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
               orderEvents);
 
       order = orderRepository.createOrder(order);
-      return CreateOrderResult.from(order);
+      String orderName = OrderNameBuilder.build(order.getItems());
+      return CreateOrderResult.of(order, orderName);
     } catch (Exception e) {
       log.error(
           "[강의 생성 실패] userId: {}, lectureIds: {}, cause: {}",
@@ -74,7 +76,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           e);
       compensateLectureReservation(
           productInfo.stream().map(ProductReserveInfo::enrollmentId).toList(),
-          userInfo.userId(), command.userRole());
+          userInfo.userId(),
+          command.userRole());
       throw e;
     }
   }
@@ -192,8 +195,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     }
   }
 
-  private void compensateMentoringReservation(
-      UUID enrollmentId, UUID userId, UserRole userRole) {
+  private void compensateMentoringReservation(UUID enrollmentId, UUID userId, UserRole userRole) {
     try {
       mentoringProvider.rollbackMentoringBooking(
           new RollbackMentoringBookingData(
