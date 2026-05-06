@@ -18,6 +18,7 @@ public record OrderPaymentPendingEvent(
         order.getOrderer().getStudentId(),
         order.getOrderer().getStudentName(),
         order.getOrderer().getStudentEmail(),
-        OrderNameBuilder.build(order.getItems()));
+        order.getOrderName()
+    );
   }
 }
