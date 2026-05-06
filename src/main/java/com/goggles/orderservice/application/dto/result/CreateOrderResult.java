@@ -7,11 +7,7 @@ public record CreateOrderResult(UUID orderId, String productName, Long orderPric
   public static CreateOrderResult from(Order order) {
     return new CreateOrderResult(
         order.getId(),
-        order.getItems().getFirst().getProduct().getProductName(),
+        order.getOrderName(),
         order.getPrice().getFinalPrice());
-  }
-
-  public static CreateOrderResult of(Order order, String productName) {
-    return new CreateOrderResult(order.getId(), productName, order.getPrice().getFinalPrice());
   }
 }

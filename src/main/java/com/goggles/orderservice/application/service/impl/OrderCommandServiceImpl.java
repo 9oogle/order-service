@@ -28,7 +28,6 @@ import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
-import com.goggles.orderservice.domain.util.OrderNameBuilder;
 import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -79,8 +78,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
               orderEvents);
 
       order = orderRepository.createOrder(order);
-      String orderName = OrderNameBuilder.build(order.getItems());
-      return CreateOrderResult.of(order, orderName);
+      return CreateOrderResult.from(order);
     } catch (Exception e) {
       log.error(
           "[강의 생성 실패] userId: {}, lectureIds: {}, cause: {}",

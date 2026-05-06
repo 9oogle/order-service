@@ -115,6 +115,12 @@ public class Order extends BaseAudit {
     return order;
   }
 
+  public String getOrderName() {
+    String firstName = this.items.getFirst().getProduct().getProductName();
+    if (this.items.size() == 1) return firstName;
+    return firstName + " 외 " + (this.items.size() - 1) + "건";
+  }
+
   public void pay(String paymentKey, String paymentMethod) {
     this.payment = new Payment(paymentKey, paymentMethod);
     transitionTo(OrderStatus.PAID);
