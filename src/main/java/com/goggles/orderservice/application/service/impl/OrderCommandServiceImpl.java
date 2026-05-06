@@ -29,6 +29,7 @@ import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import com.goggles.orderservice.domain.util.OrderNameBuilder;
+import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
@@ -44,14 +45,27 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   private final MentoringProvider mentoringProvider;
   private final UserReader userReader;
   private final OrderRepository orderRepository;
-
   private final OrderEvents orderEvents;
 
   @Override
   @Transactional
   public CreateOrderResult createLectureOrder(CreateLectureOrderCommand command) {
-    UserInfo userInfo = getUserInfo(command.userId());
-    List<ProductReserveInfo> productInfo = reserveLecture(command, userInfo.userName());
+    UserInfo userInfo;
+    try {
+      userInfo = getUserInfo(command.userId());
+    } catch (ExternalServiceException e) {
+      log.warn("[유저 조회 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+      throw e;
+    }
+
+    List<ProductReserveInfo> productInfo;
+    try {
+      productInfo = reserveLecture(command, userInfo.userName());
+    } catch (ExternalServiceException e) {
+      log.warn("[강의 예약 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+      throw e;
+    }
+
     Long totalPrice = calculateTotalPriceFromList(productInfo);
     List<OrderItemSpec> itemSpecs = convertOrderItemSpecs(productInfo, OrderItemType.LECTURE);
 
@@ -85,8 +99,22 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Override
   @Transactional
   public CreateOrderResult createMentoringOrder(CreateMentoringOrderCommand command) {
-    UserInfo userInfo = getUserInfo(command.userId());
-    ProductReserveInfo productInfo = reserveMentoring(command, userInfo.userName());
+    UserInfo userInfo;
+    try {
+      userInfo = getUserInfo(command.userId());
+    } catch (ExternalServiceException e) {
+      log.warn("[유저 조회 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+      throw e;
+    }
+
+    ProductReserveInfo productInfo;
+    try {
+      productInfo = reserveMentoring(command, userInfo.userName());
+    } catch (ExternalServiceException e) {
+      log.warn("[멘토링 예약 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+      throw e;
+    }
+
     OrderItemSpec itemSpec = productInfo.toOrderItemSpec(OrderItemType.MENTORING);
 
     try {
@@ -116,16 +144,28 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Override
   @Transactional
   public CancelOrderResult cancelLectureOrder(CancelLectureOrderCommand command) {
-    UserInfo userInfo = getUserInfo(command.userId());
+    UserInfo userInfo;
+    try {
+      userInfo = getUserInfo(command.userId());
+    } catch (ExternalServiceException e) {
+      log.warn("[유저 조회 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+      throw e;
+    }
+
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
       order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription());
-      lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
+      try {
+        lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
+      } catch (ExternalServiceException e) {
+        log.warn("[강의 예약 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+        throw e;
+      }
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
-          "[강의 주문 취소 실패] userId: {}, enrollmentIds: {}, cause: {}",
+          "[강의 등록 취소 실패] userId: {}, enrollmentIds: {}, cause: {}",
           userInfo.userId(),
           command.enrollmentIds().stream().toList(),
           e.getMessage(),
@@ -137,12 +177,24 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Override
   @Transactional
   public CancelOrderResult cancelMentoringOrder(CancelMentoringOrderCommand command) {
-    UserInfo userInfo = getUserInfo(command.userId());
+    UserInfo userInfo;
+    try {
+      userInfo = getUserInfo(command.userId());
+    } catch (ExternalServiceException e) {
+      log.warn("[유저 조회 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+      throw e;
+    }
+
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
       order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription());
-      mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
+      try {
+        mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
+      } catch (ExternalServiceException e) {
+        log.warn("[멘토링 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+        throw e;
+      }
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
