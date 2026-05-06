@@ -17,7 +17,9 @@ public class Resilience4JConfig {
   private final CircuitBreakerRegistry circuitBreakerRegistry;
 
   @Bean
-  public Customizer<Resilience4JCircuitBreakerFactory> circuitBreakerFactoryCustomizer() {
+  public Customizer<Resilience4JCircuitBreakerFactory> circuitBreakerFactoryCustomizer(
+      CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry) {
+
     return factory -> {
       factory.configure(
           builder ->
@@ -32,22 +34,24 @@ public class Resilience4JConfig {
                           .orElse(circuitBreakerRegistry.getDefaultConfig()))
                   .build(),
           "lecture-service-write",
-          "mentoring-service-write");
+          "mentoring-service-write",
+          "lecture-service-cancel",
+          "mentoring-service-cancel");
 
       factory.configure(
           builder ->
               builder
                   .timeLimiterConfig(
                       timeLimiterRegistry
-                          .getConfiguration("default-cancel")
+                          .getConfiguration("default-rollback")
                           .orElse(timeLimiterRegistry.getDefaultConfig()))
                   .circuitBreakerConfig(
                       circuitBreakerRegistry
-                          .getConfiguration("default-cancel")
+                          .getConfiguration("default-rollback")
                           .orElse(circuitBreakerRegistry.getDefaultConfig()))
                   .build(),
-          "lecture-service-cancel",
-          "mentoring-service-cancel");
+          "lecture-service-rollback",
+          "mentoring-service-rollback");
 
       factory.configure(
           builder ->
@@ -66,9 +70,10 @@ public class Resilience4JConfig {
       factory.configureDefault(
           id -> {
             String configName =
-                id.contains("write")
+                id.contains("write") || id.contains("cancel")
                     ? "default-write"
-                    : id.contains("cancel") ? "default-cancel" : "default-read";
+                    : id.contains("rollback") ? "default-rollback" : "default-read";
+
             return new Resilience4JConfigBuilder(id)
                 .timeLimiterConfig(
                     timeLimiterRegistry

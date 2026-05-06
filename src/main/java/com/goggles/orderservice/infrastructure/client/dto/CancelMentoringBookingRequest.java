@@ -1,17 +1,12 @@
 package com.goggles.orderservice.infrastructure.client.dto;
 
 import com.goggles.orderservice.application.dto.external.CancelMentoringBookingData;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.util.UUID;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class CancelMentoringBookingRequest {
-  private String cancelReason;
-
-  public static CancelMentoringBookingRequest of(CancelMentoringBookingData data) {
-    return new CancelMentoringBookingRequest(data.cancelReason().name());
+public record CancelMentoringBookingRequest(
+    UUID orderId, String cancelReason, String cancelDescription) {
+  public static CancelMentoringBookingRequest from(CancelMentoringBookingData data) {
+    return new CancelMentoringBookingRequest(
+        data.orderId(), data.cancelReason(), data.cancelDescription());
   }
 }

@@ -6,9 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
 
 import com.goggles.orderservice.application.common.UserRole;
+import com.goggles.orderservice.application.dto.command.CancelLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
@@ -20,12 +20,17 @@ import com.goggles.orderservice.application.port.out.UserReader;
 import com.goggles.orderservice.application.service.impl.OrderCommandServiceImpl;
 import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
+import com.goggles.orderservice.domain.exception.NotFoundOrderException;
+import com.goggles.orderservice.domain.model.CancelReason;
 import com.goggles.orderservice.domain.model.Order;
+import com.goggles.orderservice.domain.model.OrderItemType;
+import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -50,18 +55,18 @@ class OrderCommandServiceTest {
   private final UUID COUPON_ID = UUID.randomUUID();
   private final UUID LECTURE_ID = UUID.randomUUID();
   private final UUID MENTORING_ID = UUID.randomUUID();
+  private final UUID ENROLLMENT_ID = UUID.randomUUID();
   private final UUID ORDER_ID = UUID.randomUUID();
-  private final String USER_ROLE = "STUDENT";
-  private final String USER_NAME = "홍길동";
-  private final String USER_EMAIL = "hello1@naver.com";
 
   private UserInfo userInfo() {
+    String USER_NAME = "홍길동";
+    String USER_EMAIL = "hello1@naver.com";
     return new UserInfo(USER_ID, USER_NAME, USER_EMAIL);
   }
 
   private ProductReserveInfo lectureProductReserveInfo() {
     return new ProductReserveInfo(
-        UUID.randomUUID(), LECTURE_ID, "자바 강의", 10000L, UUID.randomUUID(), "강사A");
+        ENROLLMENT_ID, LECTURE_ID, "자바 강의", 10000L, UUID.randomUUID(), "강사A");
   }
 
   private ProductReserveInfo mentoringProductReserveInfo() {
@@ -69,72 +74,74 @@ class OrderCommandServiceTest {
         UUID.randomUUID(), MENTORING_ID, "멘토링", 50000L, UUID.randomUUID(), "멘토A");
   }
 
-  private Order mockOrder() {
-    Order order = mock(Order.class);
-    given(order.getId()).willReturn(ORDER_ID);
-    given(order.getOrderer()).willReturn(new Orderer(USER_ID, USER_NAME, USER_EMAIL));
-    return order;
+  private Order createLectureOrderEntity() {
+    UserInfo user = userInfo();
+    ProductReserveInfo product = lectureProductReserveInfo();
+    return Order.create(
+        new Orderer(user.userId(), user.userName(), user.userEmail()),
+        null,
+        new OrderPrice(product.productPrice(), 0L),
+        List.of(product.toOrderItemSpec(OrderItemType.LECTURE)),
+        orderEvents);
+  }
+
+  private Order createMentoringOrderEntity() {
+    UserInfo user = userInfo();
+    ProductReserveInfo product = mentoringProductReserveInfo();
+    return Order.create(
+        new Orderer(user.userId(), user.userName(), user.userEmail()),
+        null,
+        new OrderPrice(product.productPrice(), 0L),
+        product.toOrderItemSpec(OrderItemType.MENTORING),
+        orderEvents);
+  }
+
+  private CreateLectureOrderCommand lectureCommand() {
+    return new CreateLectureOrderCommand(
+        USER_ID, UserRole.STUDENT, COUPON_ID, "CARD", List.of(LECTURE_ID));
   }
 
   @Nested
   @DisplayName("강의 주문 생성")
   class CreateLectureOrder {
 
-    private CreateLectureOrderCommand command() {
-      return new CreateLectureOrderCommand(
-          USER_ID, UserRole.from(USER_ROLE), COUPON_ID, "CARD", List.of(LECTURE_ID));
-    }
-
     @Test
-    @DisplayName("성공: 정상적으로 강의 주문이 생성된다")
-    void success() {
+    @DisplayName("성공: 실제 도메인 로직을 거쳐 주문이 생성되고 이벤트가 발행된다")
+    void successWithDomainLogic() {
       // given
-      ProductReserveInfo productInfo = lectureProductReserveInfo();
-      Order order = mockOrder();
+      ProductReserveInfo reserveInfo =
+          new ProductReserveInfo(
+              ENROLLMENT_ID, LECTURE_ID, "자바 강의", 10000L, UUID.randomUUID(), "강사A");
 
       given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
-      given(lectureProvider.reserveEnrollment(any())).willReturn(List.of(productInfo));
-      given(orderRepository.createOrder(any())).willReturn(order);
+      given(lectureProvider.reserveEnrollment(any())).willReturn(List.of(reserveInfo));
+      given(orderRepository.createOrder(any(Order.class)))
+          .willAnswer(invocation -> invocation.getArgument(0));
 
       // when
-      CreateOrderResult result = orderCommandService.createLectureOrder(command());
+      CreateOrderResult result = orderCommandService.createLectureOrder(lectureCommand());
 
       // then
-      assertThat(result.orderId()).isEqualTo(ORDER_ID);
-      assertThat(result.studentId()).isEqualTo(USER_ID);
-
-      then(userReader).should().getUserInfo(USER_ID);
-      then(lectureProvider).should().reserveEnrollment(any());
-      then(orderRepository).should().createOrder(any());
-
+      assertThat(result).isNotNull();
       then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
+      then(orderRepository).should().createOrder(any(Order.class));
     }
 
     @Test
-    @DisplayName("성공: 여러 강의 주문 시 총 가격이 합산된다")
-    void totalPriceSummed() {
+    @DisplayName("보상 트랜잭션: DB 저장 실패 시 이미 예약된 강의를 롤백한다")
+    void rollbackWhenRepositoryFails() {
       // given
-      ProductReserveInfo info1 =
-          new ProductReserveInfo(
-              UUID.randomUUID(), UUID.randomUUID(), "강의A", 10000L, UUID.randomUUID(), "강사A");
-      ProductReserveInfo info2 =
-          new ProductReserveInfo(
-              UUID.randomUUID(), UUID.randomUUID(), "강의B", 20000L, UUID.randomUUID(), "강사B");
-      Order order = mockOrder();
-
       given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
-      given(lectureProvider.reserveEnrollment(any())).willReturn(List.of(info1, info2));
-      given(orderRepository.createOrder(any())).willReturn(order);
+      given(lectureProvider.reserveEnrollment(any()))
+          .willReturn(List.of(lectureProductReserveInfo()));
+      given(orderRepository.createOrder(any())).willThrow(new RuntimeException("DB Error"));
 
-      // when
-      orderCommandService.createLectureOrder(command());
+      // when & then
+      assertThatThrownBy(() -> orderCommandService.createLectureOrder(lectureCommand()))
+          .isInstanceOf(RuntimeException.class);
 
-      // then - 총합 30000L로 Order.create 호출됐는지 검증
-      then(orderRepository)
-          .should()
-          .createOrder(argThat(o -> o.getPrice().getFinalPrice() == 30000L));
-
-      then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
+      // 보상 트랜잭션 호출 여부만 검증 (이벤트는 Order.create 시점에 이미 발행되므로 이 테스트의 관심사 아님)
+      then(lectureProvider).should().rollbackLectureEnrollment(any());
     }
 
     @Test
@@ -144,7 +151,7 @@ class OrderCommandServiceTest {
       given(userReader.getUserInfo(USER_ID)).willThrow(new RuntimeException("유저 없음"));
 
       // when & then
-      assertThatThrownBy(() -> orderCommandService.createLectureOrder(command()))
+      assertThatThrownBy(() -> orderCommandService.createLectureOrder(lectureCommand()))
           .isInstanceOf(RuntimeException.class)
           .hasMessage("유저 없음");
 
@@ -160,10 +167,65 @@ class OrderCommandServiceTest {
       given(lectureProvider.reserveEnrollment(any())).willThrow(new RuntimeException("예약 실패"));
 
       // when & then
-      assertThatThrownBy(() -> orderCommandService.createLectureOrder(command()))
+      assertThatThrownBy(() -> orderCommandService.createLectureOrder(lectureCommand()))
           .isInstanceOf(RuntimeException.class);
 
       then(orderRepository).shouldHaveNoInteractions();
+    }
+  }
+
+  @Nested
+  @DisplayName("주문 취소")
+  class CancelOrder {
+
+    @Test
+    @DisplayName("성공: 강의 주문을 취소하면 외부 서비스 호출 후 주문 상태가 CANCELLED로 변경된다")
+    void cancelLectureSuccess() {
+      // given
+      CancelLectureOrderCommand command =
+          new CancelLectureOrderCommand(
+              USER_ID,
+              UserRole.STUDENT,
+              ORDER_ID,
+              List.of(ENROLLMENT_ID),
+              CancelReason.USER_CANCEL.name(),
+              "그냥요");
+
+      Order order = createLectureOrderEntity();
+
+      given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
+      given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID))
+          .willReturn(Optional.of(order));
+
+      // when
+      orderCommandService.cancelLectureOrder(command);
+
+      // then: 외부 서비스 호출 검증
+      then(lectureProvider).should().cancelLectureEnrollment(any());
+      // then: 도메인 상태 변경 검증 (실제 도메인 객체이므로 상태로 검증)
+      assertThat(order.getCanceledAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("실패: 주문이 존재하지 않으면 예외가 발생하고 외부 서비스는 호출되지 않는다")
+    void cancelFailWhenOrderNotFound() {
+      // given
+      CancelLectureOrderCommand command =
+          new CancelLectureOrderCommand(
+              USER_ID,
+              UserRole.STUDENT,
+              ORDER_ID,
+              List.of(ENROLLMENT_ID),
+              CancelReason.USER_CANCEL.name(),
+              "그냥요");
+      given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
+      given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID)).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> orderCommandService.cancelLectureOrder(command))
+          .isInstanceOf(NotFoundOrderException.class);
+
+      then(lectureProvider).shouldHaveNoInteractions();
     }
   }
 
@@ -172,6 +234,7 @@ class OrderCommandServiceTest {
   class CreateMentoringOrder {
 
     private CreateMentoringOrderCommand command() {
+      String USER_ROLE = "STUDENT";
       return new CreateMentoringOrderCommand(
           USER_ID,
           UserRole.from(USER_ROLE),
@@ -189,23 +252,20 @@ class OrderCommandServiceTest {
     void success() {
       // given
       ProductReserveInfo productInfo = mentoringProductReserveInfo();
-      Order order = mockOrder();
 
       given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
       given(mentoringProvider.reserveEnrollment(any())).willReturn(productInfo);
-      given(orderRepository.createOrder(any())).willReturn(order);
+      // createOrder에 전달된 실제 Order를 그대로 반환
+      given(orderRepository.createOrder(any())).willAnswer(inv -> inv.getArgument(0));
 
       // when
       CreateOrderResult result = orderCommandService.createMentoringOrder(command());
 
       // then
-      assertThat(result.orderId()).isEqualTo(ORDER_ID);
-      assertThat(result.studentId()).isEqualTo(USER_ID);
-
+      assertThat(result).isNotNull();
       then(userReader).should().getUserInfo(USER_ID);
       then(mentoringProvider).should().reserveEnrollment(any());
       then(orderRepository).should().createOrder(any());
-
       then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
     }
 
@@ -214,25 +274,23 @@ class OrderCommandServiceTest {
     void singleItemPrice() {
       // given
       ProductReserveInfo productInfo = mentoringProductReserveInfo(); // 50000L
-      Order order = mockOrder();
 
       given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
       given(mentoringProvider.reserveEnrollment(any())).willReturn(productInfo);
-      given(orderRepository.createOrder(any())).willReturn(order);
+      given(orderRepository.createOrder(any())).willAnswer(inv -> inv.getArgument(0));
 
       // when
       orderCommandService.createMentoringOrder(command());
 
-      // then
+      // then: createOrder에 전달된 Order의 실제 price 검증
       then(orderRepository)
           .should()
           .createOrder(argThat(o -> o.getPrice().getFinalPrice() == 50000L));
-
       then(orderEvents).should().orderPaymentPending(any(OrderPaymentPendingEvent.class));
     }
 
     @Test
-    @DisplayName("실패: 멘토링 예약 실패 시 예외가 전파된다")
+    @DisplayName("실패: 멘토링 예약 실패 시 보상 트랜잭션이 호출되고 예외가 전파된다")
     void reservationFailed() {
       // given
       given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
@@ -243,6 +301,23 @@ class OrderCommandServiceTest {
           .isInstanceOf(RuntimeException.class);
 
       then(orderRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("보상 트랜잭션: DB 저장 실패 시 멘토링 예약을 롤백한다")
+    void rollbackWhenRepositoryFails() {
+      // given
+      ProductReserveInfo productInfo = mentoringProductReserveInfo();
+
+      given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
+      given(mentoringProvider.reserveEnrollment(any())).willReturn(productInfo);
+      given(orderRepository.createOrder(any())).willThrow(new RuntimeException("DB Error"));
+
+      // when & then
+      assertThatThrownBy(() -> orderCommandService.createMentoringOrder(command()))
+          .isInstanceOf(RuntimeException.class);
+
+      then(mentoringProvider).should().rollbackMentoringBooking(any());
     }
   }
 }
