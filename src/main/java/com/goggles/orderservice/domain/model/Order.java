@@ -4,6 +4,7 @@ import com.goggles.common.domain.BaseAudit;
 import com.goggles.orderservice.domain.event.LectureOrderCompletionEvent;
 import com.goggles.orderservice.domain.event.MentoringOrderCompletionEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
+import com.goggles.orderservice.domain.event.OrderPaymentCancelEvent;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
 import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
@@ -148,11 +149,13 @@ public class Order extends BaseAudit {
     transitionTo(OrderStatus.PAYMENT_FAILED);
   }
 
-  public void cancel(CancelReason reason, String description) {
+  public void cancel(CancelReason reason, String description, OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     this.cancelReason = reason;
     this.cancelDescription = description;
     this.canceledAt = LocalDateTime.now();
     transitionTo(OrderStatus.CANCELED);
+    events.orderPaymentCancelled(OrderPaymentCancelEvent.from(this));
   }
 
   public void cancelItem(UUID itemId) {

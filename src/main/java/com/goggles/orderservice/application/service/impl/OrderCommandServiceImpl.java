@@ -130,7 +130,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       log.error(
           "[멘토링 주문 생성 실패] userId: {}, mentoringId: {}, cause: {}",
           userInfo.userId(),
-          productInfo.enrollmentId(),
+          productInfo.productId(),
           e.getMessage(),
           e);
       compensateMentoringReservation(
@@ -153,17 +153,17 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription());
+      order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       try {
         lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
       } catch (ExternalServiceException e) {
-        log.warn("[강의 예약 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+        log.warn("[강의 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
         throw e;
       }
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
-          "[강의 등록 취소 실패] userId: {}, enrollmentIds: {}, cause: {}",
+          "[강의 주문 취소 실패] userId: {}, enrollmentIds: {}, cause: {}",
           userInfo.userId(),
           command.enrollmentIds().stream().toList(),
           e.getMessage(),
@@ -186,7 +186,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription());
+      order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       try {
         mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
       } catch (ExternalServiceException e) {
@@ -196,7 +196,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
-          "[멘토링 주문 취소 실패] userId: {}, mentoringId: {}, cause: {}",
+          "[멘토링 주문 취소 실패] userId: {}, bookingId: {}, cause: {}",
           userInfo.userId(),
           command.enrollmentId(),
           e.getMessage(),
