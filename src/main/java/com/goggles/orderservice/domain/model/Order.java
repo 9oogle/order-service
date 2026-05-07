@@ -1,7 +1,9 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
+import com.goggles.orderservice.domain.event.LectureOrderCancelEvent;
 import com.goggles.orderservice.domain.event.LectureOrderCompletionEvent;
+import com.goggles.orderservice.domain.event.MentoringOrderCancelEvent;
 import com.goggles.orderservice.domain.event.MentoringOrderCompletionEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.event.OrderPaymentCancelEvent;
@@ -57,6 +59,10 @@ public class Order extends BaseAudit {
   private LocalDateTime canceledAt;
 
   @Enumerated(EnumType.STRING)
+  @Column(name = "order_type", nullable = false, length = 20)
+  private OrderType orderType;
+
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
   private OrderStatus status = OrderStatus.PAYMENT_PENDING;
 
@@ -83,6 +89,7 @@ public class Order extends BaseAudit {
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
+    order.orderType = OrderType.LECTURE;
 
     for (OrderItemSpec spec : itemSpecs) {
       order.addItem(OrderItem.create(spec.product(), spec.instructor(), spec.enrollmentId()));
@@ -109,6 +116,7 @@ public class Order extends BaseAudit {
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
+    order.orderType = OrderType.MENTORING;
     order.addItem(
         OrderItem.create(itemSpec.product(), itemSpec.instructor(), itemSpec.enrollmentId()));
     events.orderPaymentPending(OrderPaymentPendingEvent.from(order));
@@ -148,14 +156,34 @@ public class Order extends BaseAudit {
   public void failPayment() {
     transitionTo(OrderStatus.PAYMENT_FAILED);
   }
+  public void cancelPayment() {
+    transitionTo(OrderStatus.PAID_CANCELED);
+  }
 
-  public void cancel(CancelReason reason, String description, OrderEvents events) {
+  public void cancelRequest(CancelReason reason, String description, OrderEvents events) {
     Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     this.cancelReason = reason;
     this.cancelDescription = description;
     this.canceledAt = LocalDateTime.now();
-    transitionTo(OrderStatus.CANCELED);
+    transitionTo(OrderStatus.CANCEL_REQUESTED);
     events.orderPaymentCancelled(OrderPaymentCancelEvent.from(this));
+  }
+
+  public void cancelMentoring(OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
+    transitionTo(OrderStatus.CANCELED);
+    events.mentoringOrderCancelled(
+        new MentoringOrderCancelEvent(
+            this.id, this.orderer.getStudentId(), this.items.getFirst().getEnrollmentId()));
+  }
+
+  public void cancelLecture(OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
+    transitionTo(OrderStatus.CANCELED);
+    events.lectureOrderCancelled(
+        new LectureOrderCancelEvent(
+            this.id, this.orderer.getStudentId(),
+            this.items.stream().map(OrderItem::getEnrollmentId).toList()));
   }
 
   public void cancelItem(UUID itemId) {

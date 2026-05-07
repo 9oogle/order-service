@@ -10,25 +10,37 @@ public enum OrderStatus {
   PAYMENT_PENDING("결제 대기") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
-      return EnumSet.of(PAID, PAYMENT_FAILED, CANCELED);
+      return EnumSet.of(PAID, PAYMENT_FAILED, CANCEL_REQUESTED, CANCELED);
     }
   },
   PAID("결제 완료") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
-      return EnumSet.of(COMPLETED, CANCELED);
+      return EnumSet.of(COMPLETED, CANCEL_REQUESTED);
+    }
+  },
+  PAID_CANCELED("결제 취소") {
+    @Override
+    public Set<OrderStatus> allowedTransitions() {
+      return EnumSet.of(CANCELED);
     }
   },
   COMPLETED("주문 완료") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
-      return EnumSet.of(CANCELED);
+      return EnumSet.of(CANCEL_REQUESTED, CANCELED);
     }
   },
   PAYMENT_FAILED("결제 실패") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
       return EnumSet.noneOf(OrderStatus.class);
+    }
+  },
+  CANCEL_REQUESTED ("취소 요청") {
+    @Override
+    public Set<OrderStatus> allowedTransitions() {
+      return EnumSet.of(CANCELED);
     }
   },
   CANCELED("주문 취소") {
