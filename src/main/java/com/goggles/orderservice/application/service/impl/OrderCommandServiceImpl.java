@@ -21,6 +21,8 @@ import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
 import com.goggles.orderservice.application.port.out.UserReader;
 import com.goggles.orderservice.application.service.OrderCommandService;
+import com.goggles.orderservice.domain.event.NotificationOrderCanceledEvent;
+import com.goggles.orderservice.domain.event.NotificationOrderCompletedEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.exception.NotFoundOrderException;
 import com.goggles.orderservice.domain.model.CancelReason;
@@ -35,6 +37,7 @@ import com.goggles.orderservice.domain.repository.OrderRepository;
 import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -146,16 +149,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Override
   @Transactional
   public CancelOrderResult cancelLectureOrder(CancelLectureOrderCommand command) {
-    UserInfo userInfo;
-    try {
-      userInfo = getUserInfo(command.userId());
-    } catch (ExternalServiceException e) {
-      log.warn("[유저 조회 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
-      throw e;
-    }
-
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
-
     try {
       if (order.getStatus() == OrderStatus.PAYMENT_PENDING
           || order.getStatus() == OrderStatus.PAID) {
@@ -164,7 +158,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         try {
           lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
         } catch (ExternalServiceException e) {
-          log.warn("[강의 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+          log.warn("[강의 예약 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
           throw e;
         }
       }
@@ -174,7 +168,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     } catch (Exception e) {
       log.error(
           "[강의 주문 취소 실패] userId: {}, enrollmentIds: {}, cause: {}",
-          userInfo.userId(),
+          command.userId(),
           command.enrollmentIds().stream().toList(),
           e.getMessage(),
           e);
@@ -185,14 +179,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Override
   @Transactional
   public CancelOrderResult cancelMentoringOrder(CancelMentoringOrderCommand command) {
-    UserInfo userInfo;
-    try {
-      userInfo = getUserInfo(command.userId());
-    } catch (ExternalServiceException e) {
-      log.warn("[유저 조회 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
-      throw e;
-    }
-
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
@@ -203,7 +189,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         try {
           mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
         } catch (ExternalServiceException e) {
-          log.warn("[멘토링 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+          log.warn("[멘토링 예약 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
           throw e;
         }
       }
@@ -213,7 +199,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     } catch (Exception e) {
       log.error(
           "[멘토링 주문 취소 실패] userId: {}, bookingId: {}, cause: {}",
-          userInfo.userId(),
+          command.userId(),
           command.enrollmentId(),
           e.getMessage(),
           e);
@@ -229,18 +215,22 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Transactional
   public void completeOrderPayment(CompleteOrderPaymentCommand command) {
     Order order = getOrderById(command.orderId());
+    order.validateAmount(command.amount());
     order.pay(command.paymentKey(), command.paymentMethod());
 
     switch (order.getOrderType()) {
       case LECTURE -> order.completeLecture(orderEvents);
       case MENTORING -> order.completeMentoring(orderEvents);
     }
+
+    orderEvents.notificationOrderCompleted(NotificationOrderCompletedEvent.from(order));
   }
 
   @Override
   @Transactional
   public void failOrderPayment(FailOrderPaymentCommand command) {
     Order order = getOrderById(command.orderId());
+    order.validateAmount(command.amount());
     order.failPayment();
 
     switch (order.getOrderType()) {
@@ -262,12 +252,15 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Transactional
   public void cancelOrderPayment(CancelOrderPaymentCommand command) {
     Order order = getOrderById(command.orderId());
+    order.validateAmount(command.amount());
     order.cancelPayment();
 
     switch (order.getOrderType()) {
       case LECTURE -> order.cancelLecture(orderEvents);
       case MENTORING -> order.cancelMentoring(orderEvents);
     }
+
+    orderEvents.notificationOrderCanceled(NotificationOrderCanceledEvent.from(order));
   }
 
   private UserInfo getUserInfo(UUID userId) {
