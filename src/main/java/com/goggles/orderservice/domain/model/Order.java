@@ -172,8 +172,7 @@ public class Order extends BaseAudit {
   }
 
   public boolean isPendingOrPaid() {
-    return this.status == OrderStatus.PAYMENT_PENDING
-        || this.status == OrderStatus.PAID;
+    return this.status == OrderStatus.PAYMENT_PENDING || this.status == OrderStatus.PAID;
   }
 
   public boolean isCompleted() {

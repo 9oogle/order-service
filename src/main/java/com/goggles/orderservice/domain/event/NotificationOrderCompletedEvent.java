@@ -5,8 +5,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record NotificationOrderCompletedEvent(
-    UUID orderId, String customerEmail, String customerName, String orderName, Long amount, LocalDateTime approvedAt
-) {
+    UUID orderId,
+    String customerEmail,
+    String customerName,
+    String orderName,
+    Long amount,
+    LocalDateTime approvedAt) {
   public static NotificationOrderCompletedEvent from(Order order) {
     return new NotificationOrderCompletedEvent(
         order.getId(),
@@ -14,7 +18,6 @@ public record NotificationOrderCompletedEvent(
         order.getOrderer().getStudentName(),
         order.getOrderName(),
         order.getPrice().getFinalPrice(),
-        order.getCreatedAt()
-    );
+        order.getCreatedAt());
   }
 }

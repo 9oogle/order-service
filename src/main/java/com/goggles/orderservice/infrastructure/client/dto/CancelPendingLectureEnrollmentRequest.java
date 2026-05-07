@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.UUID;
 
 public record CancelPendingLectureEnrollmentRequest(List<UUID> enrollmentIds, String cancelReason) {
-  public static CancelPendingLectureEnrollmentRequest from(CancelPendingLectureEnrollmentData data) {
+  public static CancelPendingLectureEnrollmentRequest from(
+      CancelPendingLectureEnrollmentData data) {
     return new CancelPendingLectureEnrollmentRequest(data.enrollmentIds(), data.cancelReason());
   }
 }

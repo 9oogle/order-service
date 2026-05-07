@@ -155,7 +155,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     if (order.isPendingOrPaid()) {
       try {
-        lectureProvider.cancelPendingLectureEnrollment(CancelPendingLectureEnrollmentData.from(command));
+        lectureProvider.cancelPendingLectureEnrollment(
+            CancelPendingLectureEnrollmentData.from(command));
       } catch (ExternalServiceException e) {
         log.warn("[강의 결제 전 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
         throw e;
@@ -197,7 +198,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     if (order.isPendingOrPaid()) {
       try {
-        mentoringProvider.cancelPendingMentoringBooking(CancelPendingMentoringBookingData.from(command));
+        mentoringProvider.cancelPendingMentoringBooking(
+            CancelPendingMentoringBookingData.from(command));
       } catch (ExternalServiceException e) {
         log.warn("[멘토링 결제 전 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
         throw e;

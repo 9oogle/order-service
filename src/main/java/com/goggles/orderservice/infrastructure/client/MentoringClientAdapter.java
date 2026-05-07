@@ -92,12 +92,14 @@ public class MentoringClientAdapter implements MentoringProvider {
   @Retry(name = "mentoring-service-cancel")
   public void cancelPendingMentoringBooking(CancelPendingMentoringBookingData data) {
     mentoringClient.cancelPendingMentoringBooking(
-        data.userId(), data.userRole().name(), data.bookingId(),
-        new CancelPendingMentoringBookingRequest(data.cancelReason())
-    );
+        data.userId(),
+        data.userRole().name(),
+        data.bookingId(),
+        new CancelPendingMentoringBookingRequest(data.cancelReason()));
   }
 
-  private void cancelPendingMentoringBookingFallback(CancelPendingMentoringBookingData data, Throwable t) {
+  private void cancelPendingMentoringBookingFallback(
+      CancelPendingMentoringBookingData data, Throwable t) {
     log.error(
         "[멘토링 주문 취소 최종 실패] " + "userId: {}, bookingId: {}, cause: {}",
         data.userId(),

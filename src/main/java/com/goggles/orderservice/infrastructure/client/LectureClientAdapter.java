@@ -87,11 +87,11 @@ public class LectureClientAdapter implements LectureProvider {
   @Retry(name = "lecture-service-cancel")
   public void cancelPendingLectureEnrollment(CancelPendingLectureEnrollmentData data) {
     lectureClient.cancelPendingLectureEnrollment(
-        data.userId(), data.userRole().name(), CancelPendingLectureEnrollmentRequest.from(data)
-    );
+        data.userId(), data.userRole().name(), CancelPendingLectureEnrollmentRequest.from(data));
   }
 
-  private void cancelPendingLectureEnrollmentFallback(CancelPendingLectureEnrollmentData data, Throwable t) {
+  private void cancelPendingLectureEnrollmentFallback(
+      CancelPendingLectureEnrollmentData data, Throwable t) {
     log.error(
         "[강의 주문 취소 최종 실패] userId: {}, enrollmentIds: {}, cause: {}",
         data.userId(),
@@ -126,5 +126,4 @@ public class LectureClientAdapter implements LectureProvider {
 
     throw new ExternalServiceException("강의 등록 취소 처리 중 오류가 발생했습니다.");
   }
-
 }
