@@ -11,13 +11,13 @@ public record NotificationOrderCompletedEvent(
     String orderName,
     Long amount,
     LocalDateTime approvedAt) {
-  public static NotificationOrderCompletedEvent from(Order order) {
+  public static NotificationOrderCompletedEvent of(Order order, LocalDateTime approvedAt) {
     return new NotificationOrderCompletedEvent(
         order.getId(),
         order.getOrderer().getStudentEmail(),
         order.getOrderer().getStudentName(),
         order.getOrderName(),
         order.getPrice().getFinalPrice(),
-        order.getCreatedAt());
+        approvedAt);
   }
 }

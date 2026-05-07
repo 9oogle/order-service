@@ -188,7 +188,7 @@ public class Order extends BaseAudit {
   public void cancelMentoring(OrderEvents events) {
     Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     transitionTo(OrderStatus.CANCELED);
-    events.mentoringOrderCancelled(
+    events.mentoringOrderCanceled(
         new MentoringOrderCanceledEvent(
             this.id, this.orderer.getStudentId(), this.items.getFirst().getEnrollmentId()));
   }
@@ -196,7 +196,7 @@ public class Order extends BaseAudit {
   public void cancelLecture(OrderEvents events) {
     Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     transitionTo(OrderStatus.CANCELED);
-    events.lectureOrderCancelled(
+    events.lectureOrderCanceled(
         new LectureOrderCanceledEvent(
             this.id,
             this.orderer.getStudentId(),

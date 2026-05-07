@@ -16,7 +16,7 @@ public record ProductReserveInfo(
 
   public OrderItemSpec toOrderItemSpec(OrderItemType type) {
     return new OrderItemSpec(
-        new Product(productId(), enrollmentId(), productName(), productPrice(), type),
+        new Product(productId(), productName(), productPrice(), type),
         new Instructor(instructorId(), instructorName()),
         enrollmentId);
   }

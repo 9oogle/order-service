@@ -47,12 +47,12 @@ public class OrderEventsImpl implements OrderEvents {
   }
 
   @Override
-  public void lectureOrderCancelled(LectureOrderCanceledEvent event) {
+  public void lectureOrderCanceled(LectureOrderCanceledEvent event) {
     events.trigger(event.orderId().toString(), DOMAIN, orderTopics.lectureCancelled(), event);
   }
 
   @Override
-  public void mentoringOrderCancelled(MentoringOrderCanceledEvent event) {
+  public void mentoringOrderCanceled(MentoringOrderCanceledEvent event) {
     events.trigger(event.orderId().toString(), DOMAIN, orderTopics.mentoringCancelled(), event);
   }
 

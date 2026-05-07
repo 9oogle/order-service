@@ -246,7 +246,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       case MENTORING -> order.completeMentoring(orderEvents);
     }
 
-    orderEvents.notificationOrderCompleted(NotificationOrderCompletedEvent.from(order));
+    orderEvents.notificationOrderCompleted(
+        NotificationOrderCompletedEvent.of(order, command.approvedAt()));
   }
 
   @Override

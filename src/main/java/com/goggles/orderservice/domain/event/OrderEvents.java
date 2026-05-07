@@ -9,9 +9,9 @@ public interface OrderEvents {
 
   void paymentCancelRequested(OrderPaymentCanceledEvent event);
 
-  void lectureOrderCancelled(LectureOrderCanceledEvent event);
+  void lectureOrderCanceled(LectureOrderCanceledEvent event);
 
-  void mentoringOrderCancelled(MentoringOrderCanceledEvent event);
+  void mentoringOrderCanceled(MentoringOrderCanceledEvent event);
 
   void notificationOrderCompleted(NotificationOrderCompletedEvent event);
 
