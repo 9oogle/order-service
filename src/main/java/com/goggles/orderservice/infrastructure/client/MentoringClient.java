@@ -2,6 +2,7 @@ package com.goggles.orderservice.infrastructure.client;
 
 import com.goggles.common.response.ApiResponse;
 import com.goggles.orderservice.infrastructure.client.dto.CancelMentoringBookingRequest;
+import com.goggles.orderservice.infrastructure.client.dto.CancelPendingMentoringBookingRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import com.goggles.orderservice.infrastructure.client.dto.RollbackMentoringBookingRequest;
@@ -27,6 +28,13 @@ public interface MentoringClient {
       @RequestHeader("X-User-Id") UUID userId,
       @PathVariable("bookingId") UUID bookingId,
       @RequestBody RollbackMentoringBookingRequest request);
+
+  @PatchMapping("/internal/v1/mentoring-booking/{bookingId}/cancel-pending")
+  void cancelPendingMentoringBooking(
+      @RequestHeader("X-User-Id") UUID userId,
+      @RequestHeader("X-User-Role") String userRole,
+      @PathVariable("bookingId") UUID bookingId,
+      @RequestBody CancelPendingMentoringBookingRequest request);
 
   @PatchMapping("/internal/v1/mentoring-booking/{bookingId}/cancellation")
   void cancelMentoringBooking(

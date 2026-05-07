@@ -180,6 +180,12 @@ public class Order extends BaseAudit {
     return this.status == OrderStatus.COMPLETED;
   }
 
+  private boolean isCancellable() {
+    return this.status == OrderStatus.PAYMENT_PENDING
+        || this.status == OrderStatus.PAID
+        || this.status == OrderStatus.COMPLETED;
+  }
+
   public void cancelMentoring(OrderEvents events) {
     Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     transitionTo(OrderStatus.CANCELED);
@@ -257,6 +263,9 @@ public class Order extends BaseAudit {
   }
 
   public void validateCancel(CancelReason reason, String cancelDescription) {
+    if (!isCancellable()) {
+      throw new InvalidOrderException(OrderErrorCode.INVALID_ORDER_STATUS);
+    }
     if (reason == null) {
       throw new InvalidOrderException(OrderErrorCode.MISSING_CANCEL_REASON);
     }

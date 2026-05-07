@@ -10,6 +10,7 @@ import com.goggles.orderservice.application.dto.command.FailOrderPaymentCommand;
 import com.goggles.orderservice.application.dto.external.CancelLectureEnrollmentData;
 import com.goggles.orderservice.application.dto.external.CancelMentoringBookingData;
 import com.goggles.orderservice.application.dto.external.CancelPendingLectureEnrollmentData;
+import com.goggles.orderservice.application.dto.external.CancelPendingMentoringBookingData;
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
@@ -34,13 +35,11 @@ import com.goggles.orderservice.domain.model.OrderItem;
 import com.goggles.orderservice.domain.model.OrderItemSpec;
 import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
-import com.goggles.orderservice.domain.model.OrderStatus;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -196,18 +195,25 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   public CancelOrderResult cancelMentoringOrder(CancelMentoringOrderCommand command) {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
-    try {
-      if (order.getStatus() == OrderStatus.PAYMENT_PENDING
-          || order.getStatus() == OrderStatus.PAID) {
-        mentoringProvider.rollbackMentoringBooking(RollbackMentoringBookingData.from(command));
-      } else if (order.getStatus() == OrderStatus.COMPLETED) {
-        try {
-          mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
-        } catch (ExternalServiceException e) {
-          log.warn("[멘토링 예약 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
-          throw e;
-        }
+    if (order.isPendingOrPaid()) {
+      try {
+        mentoringProvider.cancelPendingMentoringBooking(CancelPendingMentoringBookingData.from(command));
+      } catch (ExternalServiceException e) {
+        log.warn("[멘토링 결제 전 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+        throw e;
       }
+    } else if (order.isCompleted()) {
+      try {
+        mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
+      } catch (ExternalServiceException e) {
+        log.warn("[멘토링 예약 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+        throw e;
+      }
+    } else {
+      throw new InvalidOrderException(OrderErrorCode.INVALID_ORDER_STATUS);
+    }
+
+    try {
       order.cancelRequest(
           CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       return CancelOrderResult.from(order);
