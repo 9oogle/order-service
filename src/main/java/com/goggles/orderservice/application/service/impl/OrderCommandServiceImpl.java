@@ -1,10 +1,12 @@
 package com.goggles.orderservice.application.service.impl;
 
-import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.application.dto.command.CancelLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CancelMentoringOrderCommand;
+import com.goggles.orderservice.application.dto.command.CancelOrderPaymentCommand;
+import com.goggles.orderservice.application.dto.command.CompleteOrderPaymentCommand;
 import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
+import com.goggles.orderservice.application.dto.command.FailOrderPaymentCommand;
 import com.goggles.orderservice.application.dto.external.CancelLectureEnrollmentData;
 import com.goggles.orderservice.application.dto.external.CancelMentoringBookingData;
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
@@ -23,9 +25,11 @@ import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.exception.NotFoundOrderException;
 import com.goggles.orderservice.domain.model.CancelReason;
 import com.goggles.orderservice.domain.model.Order;
+import com.goggles.orderservice.domain.model.OrderItem;
 import com.goggles.orderservice.domain.model.OrderItemSpec;
 import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
+import com.goggles.orderservice.domain.model.OrderStatus;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
 import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
@@ -89,7 +93,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       compensateLectureReservation(
           productInfo.stream().map(ProductReserveInfo::enrollmentId).toList(),
           userInfo.userId(),
-          command.userRole());
+          CancelReason.SYSTEM_ERROR);
       throw e;
     }
   }
@@ -134,7 +138,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           e.getMessage(),
           e);
       compensateMentoringReservation(
-          productInfo.enrollmentId(), userInfo.userId(), command.userRole());
+          productInfo.enrollmentId(), userInfo.userId(), CancelReason.SYSTEM_ERROR);
       throw e;
     }
   }
@@ -153,13 +157,17 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
-      try {
-        lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
-      } catch (ExternalServiceException e) {
-        log.warn("[강의 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
-        throw e;
+      if(order.getStatus() == OrderStatus.PAYMENT_PENDING || order.getStatus() == OrderStatus.PAID) {
+        lectureProvider.rollbackLectureEnrollment(RollbackLectureEnrollmentData.from(command));
+      } else if(order.getStatus() == OrderStatus.COMPLETED){
+        try {
+          lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
+        } catch (ExternalServiceException e) {
+          log.warn("[강의 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+          throw e;
+        }
       }
+      order.cancelRequest(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
@@ -186,13 +194,17 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      order.cancel(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
-      try {
-        mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
-      } catch (ExternalServiceException e) {
-        log.warn("[멘토링 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
-        throw e;
+      if(order.getStatus() == OrderStatus.PAYMENT_PENDING || order.getStatus() == OrderStatus.PAID) {
+        mentoringProvider.rollbackMentoringBooking(RollbackMentoringBookingData.from(command));
+      } else if(order.getStatus() == OrderStatus.COMPLETED){
+        try {
+          mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
+        } catch (ExternalServiceException e) {
+          log.warn("[멘토링 예약 취소 실패] userId: {}, cause: {}", userInfo.userId(), e.getMessage());
+          throw e;
+        }
       }
+      order.cancelRequest(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
@@ -201,7 +213,54 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           command.enrollmentId(),
           e.getMessage(),
           e);
+      compensateMentoringReservation(
+          order.getItems().getFirst().getEnrollmentId(),
+          order.getOrderer().getStudentId(),
+          CancelReason.SYSTEM_ERROR);
       throw e;
+    }
+  }
+
+  @Override
+  @Transactional
+  public void completeOrderPayment(CompleteOrderPaymentCommand command) {
+    Order order = getOrderById(command.orderId());
+    order.pay(command.paymentKey(), command.paymentMethod());
+
+    switch (order.getOrderType()) {
+      case LECTURE -> order.completeLecture(orderEvents);
+      case MENTORING -> order.completeMentoring(orderEvents);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void failOrderPayment(FailOrderPaymentCommand command) {
+    Order order = getOrderById(command.orderId());
+    order.failPayment();
+
+    switch (order.getOrderType()) {
+      case LECTURE -> compensateLectureReservation(
+          order.getItems().stream().map(OrderItem::getEnrollmentId).toList(),
+          order.getOrderer().getStudentId(),
+          CancelReason.PAYMENT_FAIL);
+
+      case MENTORING -> compensateMentoringReservation(
+          order.getItems().getFirst().getEnrollmentId(),
+          order.getOrderer().getStudentId(),
+          CancelReason.PAYMENT_FAIL);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void cancelOrderPayment(CancelOrderPaymentCommand command) {
+    Order order = getOrderById(command.orderId());
+    order.cancelPayment();
+
+    switch (order.getOrderType()) {
+      case LECTURE -> order.cancelLecture(orderEvents);
+      case MENTORING -> order.cancelMentoring(orderEvents);
     }
   }
 
@@ -228,6 +287,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     return productInfo.stream().map(product -> product.toOrderItemSpec(type)).toList();
   }
 
+  private Order getOrderById(UUID orderId) {
+    return orderRepository.getOrderById(orderId)
+        .orElseThrow(NotFoundOrderException::new);
+  }
+
   private Order getOrderByIdAndUserId(UUID orderId, UUID userId) {
     return orderRepository
         .getOrderByIdAndUserId(orderId, userId)
@@ -235,22 +299,22 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   }
 
   private void compensateLectureReservation(
-      List<UUID> enrollmentIds, UUID userId, UserRole userRole) {
+      List<UUID> enrollmentIds, UUID userId, CancelReason reason) {
     try {
       lectureProvider.rollbackLectureEnrollment(
           new RollbackLectureEnrollmentData(
-              userId, userRole, enrollmentIds, CancelReason.SYSTEM_ERROR.name()));
+              userId, enrollmentIds, reason.name()));
     } catch (Exception e) {
       log.error("강의 예약 보상 트랜잭션 실패. enrollmentIds: {}", enrollmentIds);
       // todo: DLQ 적용
     }
   }
 
-  private void compensateMentoringReservation(UUID enrollmentId, UUID userId, UserRole userRole) {
+  private void compensateMentoringReservation(UUID enrollmentId, UUID userId, CancelReason reason) {
     try {
       mentoringProvider.rollbackMentoringBooking(
           new RollbackMentoringBookingData(
-              userId, userRole, enrollmentId, CancelReason.SYSTEM_ERROR.name()));
+              userId, enrollmentId, reason.name()));
     } catch (Exception e) {
       log.error("멘토링 예약 보상 트랜잭션 실패. enrollmentId: {}", enrollmentId);
       // todo: DLQ 적용
