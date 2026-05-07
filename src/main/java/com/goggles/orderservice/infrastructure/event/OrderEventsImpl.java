@@ -1,12 +1,14 @@
 package com.goggles.orderservice.infrastructure.event;
 
 import com.goggles.common.event.Events;
-import com.goggles.orderservice.domain.event.LectureOrderCancelEvent;
+import com.goggles.orderservice.domain.event.LectureOrderCanceledEvent;
 import com.goggles.orderservice.domain.event.LectureOrderCompletionEvent;
-import com.goggles.orderservice.domain.event.MentoringOrderCancelEvent;
+import com.goggles.orderservice.domain.event.MentoringOrderCanceledEvent;
 import com.goggles.orderservice.domain.event.MentoringOrderCompletionEvent;
+import com.goggles.orderservice.domain.event.NotificationOrderCanceledEvent;
+import com.goggles.orderservice.domain.event.NotificationOrderCompletedEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
-import com.goggles.orderservice.domain.event.OrderPaymentCancelEvent;
+import com.goggles.orderservice.domain.event.OrderPaymentCanceledEvent;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,17 +42,27 @@ public class OrderEventsImpl implements OrderEvents {
   }
 
   @Override
-  public void orderPaymentCancelled(OrderPaymentCancelEvent event) {
+  public void paymentCancelRequested(OrderPaymentCanceledEvent event) {
     events.trigger(event.orderId().toString(), DOMAIN, orderTopics.paymentCancel(), event);
   }
 
   @Override
-  public void lectureOrderCancelled(LectureOrderCancelEvent event) {
+  public void lectureOrderCancelled(LectureOrderCanceledEvent event) {
     events.trigger(event.orderId().toString(), DOMAIN, orderTopics.lectureCancelled(), event);
   }
 
   @Override
-  public void mentoringOrderCancelled(MentoringOrderCancelEvent event) {
+  public void mentoringOrderCancelled(MentoringOrderCanceledEvent event) {
     events.trigger(event.orderId().toString(), DOMAIN, orderTopics.mentoringCancelled(), event);
+  }
+
+  @Override
+  public void notificationOrderCompleted(NotificationOrderCompletedEvent event) {
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.notificationCompleted(), event);
+  }
+
+  @Override
+  public void notificationOrderCanceled(NotificationOrderCanceledEvent event) {
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.notificationCancelled(), event);
   }
 }

@@ -7,9 +7,13 @@ public interface OrderEvents {
 
   void mentoringOrderCompleted(MentoringOrderCompletionEvent event);
 
-  void orderPaymentCancelled(OrderPaymentCancelEvent event);
+  void paymentCancelRequested(OrderPaymentCanceledEvent event);
 
-  void lectureOrderCancelled(LectureOrderCancelEvent event);
+  void lectureOrderCancelled(LectureOrderCanceledEvent event);
 
-  void mentoringOrderCancelled(MentoringOrderCancelEvent event);
+  void mentoringOrderCancelled(MentoringOrderCanceledEvent event);
+
+  void notificationOrderCompleted(NotificationOrderCompletedEvent event);
+
+  void notificationOrderCanceled(NotificationOrderCanceledEvent event);
 }
