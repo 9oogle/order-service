@@ -157,9 +157,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      if(order.getStatus() == OrderStatus.PAYMENT_PENDING || order.getStatus() == OrderStatus.PAID) {
+      if (order.getStatus() == OrderStatus.PAYMENT_PENDING
+          || order.getStatus() == OrderStatus.PAID) {
         lectureProvider.rollbackLectureEnrollment(RollbackLectureEnrollmentData.from(command));
-      } else if(order.getStatus() == OrderStatus.COMPLETED){
+      } else if (order.getStatus() == OrderStatus.COMPLETED) {
         try {
           lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
         } catch (ExternalServiceException e) {
@@ -167,7 +168,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           throw e;
         }
       }
-      order.cancelRequest(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
+      order.cancelRequest(
+          CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
@@ -194,9 +196,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
 
     try {
-      if(order.getStatus() == OrderStatus.PAYMENT_PENDING || order.getStatus() == OrderStatus.PAID) {
+      if (order.getStatus() == OrderStatus.PAYMENT_PENDING
+          || order.getStatus() == OrderStatus.PAID) {
         mentoringProvider.rollbackMentoringBooking(RollbackMentoringBookingData.from(command));
-      } else if(order.getStatus() == OrderStatus.COMPLETED){
+      } else if (order.getStatus() == OrderStatus.COMPLETED) {
         try {
           mentoringProvider.cancelMentoringBooking(CancelMentoringBookingData.from(command));
         } catch (ExternalServiceException e) {
@@ -204,7 +207,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           throw e;
         }
       }
-      order.cancelRequest(CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
+      order.cancelRequest(
+          CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       return CancelOrderResult.from(order);
     } catch (Exception e) {
       log.error(
@@ -240,15 +244,17 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     order.failPayment();
 
     switch (order.getOrderType()) {
-      case LECTURE -> compensateLectureReservation(
-          order.getItems().stream().map(OrderItem::getEnrollmentId).toList(),
-          order.getOrderer().getStudentId(),
-          CancelReason.PAYMENT_FAIL);
+      case LECTURE ->
+          compensateLectureReservation(
+              order.getItems().stream().map(OrderItem::getEnrollmentId).toList(),
+              order.getOrderer().getStudentId(),
+              CancelReason.PAYMENT_FAIL);
 
-      case MENTORING -> compensateMentoringReservation(
-          order.getItems().getFirst().getEnrollmentId(),
-          order.getOrderer().getStudentId(),
-          CancelReason.PAYMENT_FAIL);
+      case MENTORING ->
+          compensateMentoringReservation(
+              order.getItems().getFirst().getEnrollmentId(),
+              order.getOrderer().getStudentId(),
+              CancelReason.PAYMENT_FAIL);
     }
   }
 
@@ -288,8 +294,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   }
 
   private Order getOrderById(UUID orderId) {
-    return orderRepository.getOrderById(orderId)
-        .orElseThrow(NotFoundOrderException::new);
+    return orderRepository.getOrderById(orderId).orElseThrow(NotFoundOrderException::new);
   }
 
   private Order getOrderByIdAndUserId(UUID orderId, UUID userId) {
@@ -302,8 +307,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       List<UUID> enrollmentIds, UUID userId, CancelReason reason) {
     try {
       lectureProvider.rollbackLectureEnrollment(
-          new RollbackLectureEnrollmentData(
-              userId, enrollmentIds, reason.name()));
+          new RollbackLectureEnrollmentData(userId, enrollmentIds, reason.name()));
     } catch (Exception e) {
       log.error("강의 예약 보상 트랜잭션 실패. enrollmentIds: {}", enrollmentIds);
       // todo: DLQ 적용
@@ -313,8 +317,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   private void compensateMentoringReservation(UUID enrollmentId, UUID userId, CancelReason reason) {
     try {
       mentoringProvider.rollbackMentoringBooking(
-          new RollbackMentoringBookingData(
-              userId, enrollmentId, reason.name()));
+          new RollbackMentoringBookingData(userId, enrollmentId, reason.name()));
     } catch (Exception e) {
       log.error("멘토링 예약 보상 트랜잭션 실패. enrollmentId: {}", enrollmentId);
       // todo: DLQ 적용

@@ -33,7 +33,12 @@ public class Product {
   @Column(name = "product_type", nullable = false, length = 20)
   private OrderItemType productType;
 
-  public Product(UUID productId, UUID enrollmentId, String productName, Long productPrice, OrderItemType productType) {
+  public Product(
+      UUID productId,
+      UUID enrollmentId,
+      String productName,
+      Long productPrice,
+      OrderItemType productType) {
     validate(productId, productName, productPrice, productType);
     this.productId = productId;
     this.enrollmentId = enrollmentId;

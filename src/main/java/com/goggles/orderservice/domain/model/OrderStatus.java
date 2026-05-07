@@ -37,7 +37,7 @@ public enum OrderStatus {
       return EnumSet.noneOf(OrderStatus.class);
     }
   },
-  CANCEL_REQUESTED ("취소 요청") {
+  CANCEL_REQUESTED("취소 요청") {
     @Override
     public Set<OrderStatus> allowedTransitions() {
       return EnumSet.of(CANCELED);

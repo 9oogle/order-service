@@ -37,8 +37,7 @@ public class PaymentFailedConsumer {
 
   private FailOrderPaymentCommand toCommand(String value) {
     try {
-      PaymentFailedEvent event =
-          objectMapper.readValue(value, PaymentFailedEvent.class);
+      PaymentFailedEvent event = objectMapper.readValue(value, PaymentFailedEvent.class);
       return new FailOrderPaymentCommand(
           event.orderId(), event.amount(), event.failedAt(), event.failureReason());
     } catch (JsonProcessingException e) {

@@ -90,9 +90,7 @@ public class MentoringClientAdapter implements MentoringProvider {
   @Retry(name = "mentoring-service-rollback")
   public void rollbackMentoringBooking(RollbackMentoringBookingData data) {
     mentoringClient.rollbackMentoringBooking(
-        data.userId(),
-        data.bookingId(),
-        new RollbackMentoringBookingRequest(data.cancelReason()));
+        data.userId(), data.bookingId(), new RollbackMentoringBookingRequest(data.cancelReason()));
   }
 
   private void rollbackMentoringBookingFallback(RollbackMentoringBookingData data, Throwable t) {

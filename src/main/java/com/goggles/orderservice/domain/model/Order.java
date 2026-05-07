@@ -156,6 +156,7 @@ public class Order extends BaseAudit {
   public void failPayment() {
     transitionTo(OrderStatus.PAYMENT_FAILED);
   }
+
   public void cancelPayment() {
     transitionTo(OrderStatus.PAID_CANCELED);
   }
@@ -182,7 +183,8 @@ public class Order extends BaseAudit {
     transitionTo(OrderStatus.CANCELED);
     events.lectureOrderCancelled(
         new LectureOrderCancelEvent(
-            this.id, this.orderer.getStudentId(),
+            this.id,
+            this.orderer.getStudentId(),
             this.items.stream().map(OrderItem::getEnrollmentId).toList()));
   }
 

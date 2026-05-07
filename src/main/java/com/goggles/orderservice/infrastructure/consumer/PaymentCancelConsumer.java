@@ -4,10 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goggles.common.event.annotation.IdempotentConsumer;
 import com.goggles.orderservice.application.dto.command.CancelOrderPaymentCommand;
-import com.goggles.orderservice.application.dto.command.FailOrderPaymentCommand;
 import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.infrastructure.event.PaymentCancelEvent;
-import com.goggles.orderservice.infrastructure.event.PaymentFailedEvent;
 import com.goggles.orderservice.infrastructure.exception.InvalidPaymentEventPayloadException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +37,7 @@ public class PaymentCancelConsumer {
 
   private CancelOrderPaymentCommand toCommand(String value) {
     try {
-      PaymentCancelEvent event =
-          objectMapper.readValue(value, PaymentCancelEvent.class);
+      PaymentCancelEvent event = objectMapper.readValue(value, PaymentCancelEvent.class);
       return new CancelOrderPaymentCommand(
           event.orderId(), event.amount(), event.cancelAt(), event.cancelReason());
     } catch (JsonProcessingException e) {

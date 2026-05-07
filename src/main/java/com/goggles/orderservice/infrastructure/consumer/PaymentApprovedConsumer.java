@@ -37,10 +37,13 @@ public class PaymentApprovedConsumer {
 
   private CompleteOrderPaymentCommand toCommand(String value) {
     try {
-      PaymentApprovedEvent event =
-          objectMapper.readValue(value, PaymentApprovedEvent.class);
+      PaymentApprovedEvent event = objectMapper.readValue(value, PaymentApprovedEvent.class);
       return new CompleteOrderPaymentCommand(
-          event.orderId(), event.paymentKey(), event.amount(), event.approvedAt(), event.paymentMethod());
+          event.orderId(),
+          event.paymentKey(),
+          event.amount(),
+          event.approvedAt(),
+          event.paymentMethod());
     } catch (JsonProcessingException e) {
       throw new InvalidPaymentEventPayloadException();
     }

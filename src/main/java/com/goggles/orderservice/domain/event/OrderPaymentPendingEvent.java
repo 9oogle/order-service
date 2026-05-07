@@ -1,7 +1,6 @@
 package com.goggles.orderservice.domain.event;
 
 import com.goggles.orderservice.domain.model.Order;
-import com.goggles.orderservice.domain.util.OrderNameBuilder;
 import java.util.UUID;
 
 public record OrderPaymentPendingEvent(
@@ -18,7 +17,6 @@ public record OrderPaymentPendingEvent(
         order.getOrderer().getStudentId(),
         order.getOrderer().getStudentName(),
         order.getOrderer().getStudentEmail(),
-        order.getOrderName()
-    );
+        order.getOrderName());
   }
 }
