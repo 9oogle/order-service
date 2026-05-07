@@ -9,6 +9,7 @@ import com.goggles.orderservice.application.dto.command.CreateMentoringOrderComm
 import com.goggles.orderservice.application.dto.command.FailOrderPaymentCommand;
 import com.goggles.orderservice.application.dto.external.CancelLectureEnrollmentData;
 import com.goggles.orderservice.application.dto.external.CancelMentoringBookingData;
+import com.goggles.orderservice.application.dto.external.CancelPendingLectureEnrollmentData;
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
@@ -24,7 +25,9 @@ import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.domain.event.NotificationOrderCanceledEvent;
 import com.goggles.orderservice.domain.event.NotificationOrderCompletedEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
+import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.NotFoundOrderException;
+import com.goggles.orderservice.domain.exception.OrderErrorCode;
 import com.goggles.orderservice.domain.model.CancelReason;
 import com.goggles.orderservice.domain.model.Order;
 import com.goggles.orderservice.domain.model.OrderItem;
@@ -150,18 +153,26 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   @Transactional
   public CancelOrderResult cancelLectureOrder(CancelLectureOrderCommand command) {
     Order order = getOrderByIdAndUserId(command.orderId(), command.userId());
-    try {
-      if (order.getStatus() == OrderStatus.PAYMENT_PENDING
-          || order.getStatus() == OrderStatus.PAID) {
-        lectureProvider.rollbackLectureEnrollment(RollbackLectureEnrollmentData.from(command));
-      } else if (order.getStatus() == OrderStatus.COMPLETED) {
-        try {
-          lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
-        } catch (ExternalServiceException e) {
-          log.warn("[강의 예약 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
-          throw e;
-        }
+
+    if (order.isPendingOrPaid()) {
+      try {
+        lectureProvider.cancelPendingLectureEnrollment(CancelPendingLectureEnrollmentData.from(command));
+      } catch (ExternalServiceException e) {
+        log.warn("[강의 결제 전 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+        throw e;
       }
+    } else if (order.isCompleted()) {
+      try {
+        lectureProvider.cancelLectureEnrollment(CancelLectureEnrollmentData.from(command));
+      } catch (ExternalServiceException e) {
+        log.warn("[강의 예약 취소 실패] userId: {}, cause: {}", command.userId(), e.getMessage());
+        throw e;
+      }
+    } else {
+      throw new InvalidOrderException(OrderErrorCode.INVALID_ORDER_STATUS);
+    }
+
+    try {
       order.cancelRequest(
           CancelReason.from(command.cancelReason()), command.cancelDescription(), orderEvents);
       return CancelOrderResult.from(order);
@@ -172,6 +183,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           command.enrollmentIds().stream().toList(),
           e.getMessage(),
           e);
+      compensateLectureReservation(
+          order.getItems().stream().map(OrderItem::getEnrollmentId).toList(),
+          order.getOrderer().getStudentId(),
+          CancelReason.SYSTEM_ERROR);
       throw e;
     }
   }

@@ -19,6 +19,7 @@ public enum OrderErrorCode {
   INVALID_ORDER_AMOUNT("주문 금액이 맞지 않습니다."),
   MISSING_CANCEL_REASON("주문 취소 사유는 필수입니다."),
   INVALID_CANCEL_DESCRIPTION("주문 취소 상세 이유는 30자를 넘을 수 없습니다."),
+  INVALID_ORDER_STATUS("취소 불가능한 주문입니다."),
   MISSING_ORDER_ORDER_EVENTS("주문 이벤트는 필수입니다.");
 
   private final String messageTemplate;

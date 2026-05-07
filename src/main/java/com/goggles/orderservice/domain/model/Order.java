@@ -171,6 +171,15 @@ public class Order extends BaseAudit {
     events.paymentCancelRequested(OrderPaymentCanceledEvent.from(this));
   }
 
+  public boolean isPendingOrPaid() {
+    return this.status == OrderStatus.PAYMENT_PENDING
+        || this.status == OrderStatus.PAID;
+  }
+
+  public boolean isCompleted() {
+    return this.status == OrderStatus.COMPLETED;
+  }
+
   public void cancelMentoring(OrderEvents events) {
     Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     transitionTo(OrderStatus.CANCELED);
