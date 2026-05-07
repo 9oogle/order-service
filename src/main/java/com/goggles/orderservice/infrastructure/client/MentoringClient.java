@@ -25,7 +25,6 @@ public interface MentoringClient {
   @PatchMapping("/internal/v1/mentoring-booking/{bookingId}/rollback")
   void rollbackMentoringBooking(
       @RequestHeader("X-User-Id") UUID userId,
-      @RequestHeader("X-User-Role") String userRole,
       @PathVariable("bookingId") UUID bookingId,
       @RequestBody RollbackMentoringBookingRequest request);
 

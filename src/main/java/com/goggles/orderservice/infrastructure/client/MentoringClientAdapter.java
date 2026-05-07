@@ -91,7 +91,6 @@ public class MentoringClientAdapter implements MentoringProvider {
   public void rollbackMentoringBooking(RollbackMentoringBookingData data) {
     mentoringClient.rollbackMentoringBooking(
         data.userId(),
-        data.userRole().name(),
         data.bookingId(),
         new RollbackMentoringBookingRequest(data.cancelReason()));
   }
