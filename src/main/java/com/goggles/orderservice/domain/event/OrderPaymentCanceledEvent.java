@@ -3,7 +3,7 @@ package com.goggles.orderservice.domain.event;
 import com.goggles.orderservice.domain.model.Order;
 import java.util.UUID;
 
-public record OrderPaymentCancelEvent(
+public record OrderPaymentCanceledEvent(
     UUID orderId,
     Long amount,
     UUID customerId,
@@ -12,8 +12,8 @@ public record OrderPaymentCancelEvent(
     String orderName,
     String cancelReason,
     String cancelDescription) {
-  public static OrderPaymentCancelEvent from(Order order) {
-    return new OrderPaymentCancelEvent(
+  public static OrderPaymentCanceledEvent from(Order order) {
+    return new OrderPaymentCanceledEvent(
         order.getId(),
         order.getPrice().getFinalPrice(),
         order.getOrderer().getStudentId(),
