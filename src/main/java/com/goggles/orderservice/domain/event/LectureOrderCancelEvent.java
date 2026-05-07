@@ -4,5 +4,5 @@ import java.util.List;
 import java.util.UUID;
 
 public record LectureOrderCancelEvent(
-    UUID orderId, UUID userId, List<UUID> enrollmentIds, String cancelReason, String cancelDescription
+    UUID orderId, UUID userId, List<UUID> enrollmentIds
 ) {}
