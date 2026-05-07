@@ -20,6 +20,9 @@ public class Product {
   @Column(name = "product_id", nullable = false, updatable = false)
   private UUID productId;
 
+  @Column(name = "enrollment_id", nullable = false, updatable = false)
+  private UUID enrollmentId;
+
   @Column(name = "product_name", nullable = false)
   private String productName;
 
@@ -30,9 +33,10 @@ public class Product {
   @Column(name = "product_type", nullable = false, length = 20)
   private OrderItemType productType;
 
-  public Product(UUID productId, String productName, Long productPrice, OrderItemType productType) {
+  public Product(UUID productId, UUID enrollmentId, String productName, Long productPrice, OrderItemType productType) {
     validate(productId, productName, productPrice, productType);
     this.productId = productId;
+    this.enrollmentId = enrollmentId;
     this.productName = productName;
     this.productPrice = productPrice;
     this.productType = productType;
