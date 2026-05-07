@@ -268,7 +268,7 @@ public class Order extends BaseAudit {
     if (reason == null) {
       throw new InvalidOrderException(OrderErrorCode.MISSING_CANCEL_REASON);
     }
-    if (cancelDescription.length() <= 100) {
+    if (cancelDescription.length() >= 100) {
       throw new InvalidOrderException(OrderErrorCode.INVALID_CANCEL_DESCRIPTION);
     }
   }

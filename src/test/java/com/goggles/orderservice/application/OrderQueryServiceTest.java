@@ -68,7 +68,12 @@ public class OrderQueryServiceTest {
             new OrderPrice(110000L, 15000L),
             List.of(
                 new OrderItemSpec(
-                    new Product(UUID.randomUUID(), "자바 강의", 100000L, OrderItemType.LECTURE),
+                    new Product(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "자바 강의",
+                        100000L,
+                        OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명"),
                     UUID.randomUUID())),
             orderEvents);
@@ -80,11 +85,21 @@ public class OrderQueryServiceTest {
             new OrderPrice(900000L, 5000L),
             List.of(
                 new OrderItemSpec(
-                    new Product(UUID.randomUUID(), "스프링 강의", 110000L, OrderItemType.LECTURE),
+                    new Product(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "스프링 강의",
+                        110000L,
+                        OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명"),
                     UUID.randomUUID()),
                 new OrderItemSpec(
-                    new Product(UUID.randomUUID(), "GITHUB 강의", 580000L, OrderItemType.LECTURE),
+                    new Product(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "GITHUB 강의",
+                        580000L,
+                        OrderItemType.LECTURE),
                     new Instructor(UUID.randomUUID(), "강사명"),
                     UUID.randomUUID())),
             orderEvents);

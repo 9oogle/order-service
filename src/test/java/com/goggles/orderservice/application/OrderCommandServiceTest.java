@@ -9,6 +9,7 @@ import static org.mockito.BDDMockito.then;
 
 import com.goggles.orderservice.application.common.UserRole;
 import com.goggles.orderservice.application.dto.command.CancelLectureOrderCommand;
+import com.goggles.orderservice.application.dto.command.CancelMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateLectureOrderCommand;
 import com.goggles.orderservice.application.dto.command.CreateMentoringOrderCommand;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
@@ -175,8 +176,8 @@ class OrderCommandServiceTest {
   }
 
   @Nested
-  @DisplayName("주문 취소")
-  class CancelOrder {
+  @DisplayName("강의 주문 취소")
+  class CancelLectureOrder {
 
     @Test
     @DisplayName("성공: 강의 주문을 취소하면 외부 서비스 호출 후 주문 상태가 CANCELLED로 변경된다")
@@ -192,8 +193,9 @@ class OrderCommandServiceTest {
               "그냥요");
 
       Order order = createLectureOrderEntity();
+      order.pay("payment", "TOSS");
+      order.completeLecture(orderEvents);
 
-      given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
       given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID))
           .willReturn(Optional.of(order));
 
@@ -202,6 +204,33 @@ class OrderCommandServiceTest {
 
       // then: 외부 서비스 호출 검증
       then(lectureProvider).should().cancelLectureEnrollment(any());
+      // then: 도메인 상태 변경 검증 (실제 도메인 객체이므로 상태로 검증)
+      assertThat(order.getCanceledAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("성공: 강의 예약 주문을 취소하면 외부 서비스 호출 후 주문 상태가 CANCELLED로 변경된다")
+    void cancelPendingLectureSuccess() {
+      // given
+      CancelLectureOrderCommand command =
+          new CancelLectureOrderCommand(
+              USER_ID,
+              UserRole.STUDENT,
+              ORDER_ID,
+              List.of(ENROLLMENT_ID),
+              CancelReason.USER_CANCEL.name(),
+              "그냥요");
+
+      Order order = createLectureOrderEntity();
+
+      given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID))
+          .willReturn(Optional.of(order));
+
+      // when
+      orderCommandService.cancelLectureOrder(command);
+
+      // then: 외부 서비스 호출 검증
+      then(lectureProvider).should().cancelPendingLectureEnrollment(any());
       // then: 도메인 상태 변경 검증 (실제 도메인 객체이므로 상태로 검증)
       assertThat(order.getCanceledAt()).isNotNull();
     }
@@ -218,7 +247,7 @@ class OrderCommandServiceTest {
               List.of(ENROLLMENT_ID),
               CancelReason.USER_CANCEL.name(),
               "그냥요");
-      given(userReader.getUserInfo(USER_ID)).willReturn(userInfo());
+
       given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID)).willReturn(Optional.empty());
 
       // when & then
@@ -318,6 +347,89 @@ class OrderCommandServiceTest {
           .isInstanceOf(RuntimeException.class);
 
       then(mentoringProvider).should().rollbackMentoringBooking(any());
+    }
+  }
+
+  @Nested
+  @DisplayName("멘토링 주문 취소")
+  class CancelMentoringOrder {
+
+    @Test
+    @DisplayName("성공: 강의 주문을 취소하면 외부 서비스 호출 후 주문 상태가 CANCELLED로 변경된다")
+    void cancelMentoringSuccess() {
+      // given
+      CancelMentoringOrderCommand command =
+          new CancelMentoringOrderCommand(
+              USER_ID,
+              UserRole.STUDENT,
+              ORDER_ID,
+              ENROLLMENT_ID,
+              CancelReason.USER_CANCEL.name(),
+              "그냥요");
+
+      Order order = createLectureOrderEntity();
+      order.pay("payment", "TOSS");
+      order.completeLecture(orderEvents);
+
+      given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID))
+          .willReturn(Optional.of(order));
+
+      // when
+      orderCommandService.cancelMentoringOrder(command);
+
+      // then: 외부 서비스 호출 검증
+      then(mentoringProvider).should().cancelMentoringBooking(any());
+      // then: 도메인 상태 변경 검증 (실제 도메인 객체이므로 상태로 검증)
+      assertThat(order.getCanceledAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("성공: 멘토링 예약 주문을 취소하면 외부 서비스 호출 후 주문 상태가 CANCELLED로 변경된다")
+    void cancelPendingMentoringSuccess() {
+      // given
+      CancelMentoringOrderCommand command =
+          new CancelMentoringOrderCommand(
+              USER_ID,
+              UserRole.STUDENT,
+              ORDER_ID,
+              ENROLLMENT_ID,
+              CancelReason.USER_CANCEL.name(),
+              "그냥요");
+
+      Order order = createLectureOrderEntity();
+
+      given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID))
+          .willReturn(Optional.of(order));
+
+      // when
+      orderCommandService.cancelMentoringOrder(command);
+
+      // then: 외부 서비스 호출 검증
+      then(mentoringProvider).should().cancelPendingMentoringBooking(any());
+      // then: 도메인 상태 변경 검증 (실제 도메인 객체이므로 상태로 검증)
+      assertThat(order.getCanceledAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("실패: 멘토링이 존재하지 않으면 예외가 발생하고 외부 서비스는 호출되지 않는다")
+    void cancelFailWhenOrderNotFound() {
+      // given
+      CancelMentoringOrderCommand command =
+          new CancelMentoringOrderCommand(
+              USER_ID,
+              UserRole.STUDENT,
+              ORDER_ID,
+              ENROLLMENT_ID,
+              CancelReason.USER_CANCEL.name(),
+              "그냥요");
+
+      given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID)).willReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> orderCommandService.cancelMentoringOrder(command))
+          .isInstanceOf(NotFoundOrderException.class);
+
+      then(lectureProvider).shouldHaveNoInteractions();
     }
   }
 }
