@@ -5,10 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "topics.order")
 public record OrderTopics(
     String paymentPending,
-    String paymentCancel,
+    String paymentCanceled,
     String notificationCompleted,
-    String notificationCancelled,
+    String notificationCanceled,
     String lectureCompleted,
     String mentoringCompleted,
-    String lectureCancelled,
-    String mentoringCancelled) {}
+    String lectureCanceled,
+    String mentoringCanceled) {}

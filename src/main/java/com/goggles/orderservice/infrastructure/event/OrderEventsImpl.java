@@ -43,17 +43,17 @@ public class OrderEventsImpl implements OrderEvents {
 
   @Override
   public void paymentCancelRequested(OrderPaymentCanceledEvent event) {
-    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.paymentCancel(), event);
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.paymentCanceled(), event);
   }
 
   @Override
   public void lectureOrderCanceled(LectureOrderCanceledEvent event) {
-    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.lectureCancelled(), event);
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.lectureCanceled(), event);
   }
 
   @Override
   public void mentoringOrderCanceled(MentoringOrderCanceledEvent event) {
-    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.mentoringCancelled(), event);
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.mentoringCanceled(), event);
   }
 
   @Override
@@ -63,6 +63,6 @@ public class OrderEventsImpl implements OrderEvents {
 
   @Override
   public void notificationOrderCanceled(NotificationOrderCanceledEvent event) {
-    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.notificationCancelled(), event);
+    events.trigger(event.orderId().toString(), DOMAIN, orderTopics.notificationCanceled(), event);
   }
 }
