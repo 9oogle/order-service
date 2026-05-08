@@ -1,6 +1,7 @@
 package com.goggles.orderservice.application.port.out;
 
 import com.goggles.orderservice.application.dto.external.CancelLectureEnrollmentData;
+import com.goggles.orderservice.application.dto.external.CancelPendingLectureEnrollmentData;
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.dto.external.RollbackLectureEnrollmentData;
@@ -10,6 +11,8 @@ public interface LectureProvider {
   List<ProductReserveInfo> reserveEnrollment(LectureProductReserveData data);
 
   void rollbackLectureEnrollment(RollbackLectureEnrollmentData data);
+
+  void cancelPendingLectureEnrollment(CancelPendingLectureEnrollmentData data);
 
   void cancelLectureEnrollment(CancelLectureEnrollmentData data);
 }

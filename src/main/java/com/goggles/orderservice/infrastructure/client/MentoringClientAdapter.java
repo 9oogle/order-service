@@ -2,11 +2,13 @@ package com.goggles.orderservice.infrastructure.client;
 
 import com.goggles.common.response.ApiResponse;
 import com.goggles.orderservice.application.dto.external.CancelMentoringBookingData;
+import com.goggles.orderservice.application.dto.external.CancelPendingMentoringBookingData;
 import com.goggles.orderservice.application.dto.external.MentoringProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.dto.external.RollbackMentoringBookingData;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
 import com.goggles.orderservice.infrastructure.client.dto.CancelMentoringBookingRequest;
+import com.goggles.orderservice.infrastructure.client.dto.CancelPendingMentoringBookingRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import com.goggles.orderservice.infrastructure.client.dto.RollbackMentoringBookingRequest;
@@ -85,15 +87,40 @@ public class MentoringClientAdapter implements MentoringProvider {
 
   @Override
   @CircuitBreaker(
+      name = "mentoring-service-cancel",
+      fallbackMethod = "cancelPendingMentoringBookingFallback")
+  @Retry(name = "mentoring-service-cancel")
+  public void cancelPendingMentoringBooking(CancelPendingMentoringBookingData data) {
+    mentoringClient.cancelPendingMentoringBooking(
+        data.userId(),
+        data.userRole().name(),
+        data.bookingId(),
+        new CancelPendingMentoringBookingRequest(data.cancelReason()));
+  }
+
+  private void cancelPendingMentoringBookingFallback(
+      CancelPendingMentoringBookingData data, Throwable t) {
+    log.error(
+        "[멘토링 주문 취소 최종 실패] " + "userId: {}, bookingId: {}, cause: {}",
+        data.userId(),
+        data.bookingId(),
+        t.getMessage(),
+        t);
+
+    if (t instanceof CallNotPermittedException) {
+      throw new ExternalServiceException("현재 서비스가 일시적으로 불안정합니다. 잠시 후 다시 시도해주세요.");
+    }
+    throw new ExternalServiceException("멘토링 주문 취소 처리 중 오류가 발생했습니다.");
+  }
+
+  @Override
+  @CircuitBreaker(
       name = "mentoring-service-rollback",
       fallbackMethod = "rollbackMentoringBookingFallback")
   @Retry(name = "mentoring-service-rollback")
   public void rollbackMentoringBooking(RollbackMentoringBookingData data) {
     mentoringClient.rollbackMentoringBooking(
-        data.userId(),
-        data.userRole().name(),
-        data.bookingId(),
-        new RollbackMentoringBookingRequest(data.cancelReason()));
+        data.userId(), data.bookingId(), new RollbackMentoringBookingRequest(data.cancelReason()));
   }
 
   private void rollbackMentoringBookingFallback(RollbackMentoringBookingData data, Throwable t) {

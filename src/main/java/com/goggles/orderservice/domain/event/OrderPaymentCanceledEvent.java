@@ -3,20 +3,24 @@ package com.goggles.orderservice.domain.event;
 import com.goggles.orderservice.domain.model.Order;
 import java.util.UUID;
 
-public record OrderPaymentPendingEvent(
+public record OrderPaymentCanceledEvent(
     UUID orderId,
     Long amount,
     UUID customerId,
     String customerName,
     String customerEmail,
-    String orderName) {
-  public static OrderPaymentPendingEvent from(Order order) {
-    return new OrderPaymentPendingEvent(
+    String orderName,
+    String cancelReason,
+    String cancelDescription) {
+  public static OrderPaymentCanceledEvent from(Order order) {
+    return new OrderPaymentCanceledEvent(
         order.getId(),
         order.getPrice().getFinalPrice(),
         order.getOrderer().getStudentId(),
         order.getOrderer().getStudentName(),
         order.getOrderer().getStudentEmail(),
-        order.getOrderName());
+        order.getOrderName(),
+        order.getCancelReason().name(),
+        order.getCancelDescription());
   }
 }

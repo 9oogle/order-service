@@ -1,9 +1,12 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
+import com.goggles.orderservice.domain.event.LectureOrderCanceledEvent;
 import com.goggles.orderservice.domain.event.LectureOrderCompletionEvent;
+import com.goggles.orderservice.domain.event.MentoringOrderCanceledEvent;
 import com.goggles.orderservice.domain.event.MentoringOrderCompletionEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
+import com.goggles.orderservice.domain.event.OrderPaymentCanceledEvent;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
 import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
@@ -56,6 +59,10 @@ public class Order extends BaseAudit {
   private LocalDateTime canceledAt;
 
   @Enumerated(EnumType.STRING)
+  @Column(name = "order_type", nullable = false, length = 20)
+  private OrderType orderType;
+
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
   private OrderStatus status = OrderStatus.PAYMENT_PENDING;
 
@@ -82,6 +89,7 @@ public class Order extends BaseAudit {
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
+    order.orderType = OrderType.LECTURE;
 
     for (OrderItemSpec spec : itemSpecs) {
       order.addItem(OrderItem.create(spec.product(), spec.instructor(), spec.enrollmentId()));
@@ -108,11 +116,18 @@ public class Order extends BaseAudit {
     order.orderer = orderer;
     order.coupon = coupon;
     order.price = price;
+    order.orderType = OrderType.MENTORING;
     order.addItem(
         OrderItem.create(itemSpec.product(), itemSpec.instructor(), itemSpec.enrollmentId()));
     events.orderPaymentPending(OrderPaymentPendingEvent.from(order));
 
     return order;
+  }
+
+  public String getOrderName() {
+    String firstName = this.items.getFirst().getProduct().getProductName();
+    if (this.items.size() == 1) return firstName;
+    return firstName + " 외 " + (this.items.size() - 1) + "건";
   }
 
   public void pay(String paymentKey, String paymentMethod) {
@@ -142,11 +157,50 @@ public class Order extends BaseAudit {
     transitionTo(OrderStatus.PAYMENT_FAILED);
   }
 
-  public void cancel(CancelReason reason, String description) {
+  public void cancelPayment() {
+    transitionTo(OrderStatus.PAID_CANCELED);
+  }
+
+  public void cancelRequest(CancelReason reason, String description, OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
+    validateCancel(reason, description);
     this.cancelReason = reason;
     this.cancelDescription = description;
     this.canceledAt = LocalDateTime.now();
+    transitionTo(OrderStatus.CANCEL_REQUESTED);
+    events.paymentCancelRequested(OrderPaymentCanceledEvent.from(this));
+  }
+
+  public boolean isPendingOrPaid() {
+    return this.status == OrderStatus.PAYMENT_PENDING || this.status == OrderStatus.PAID;
+  }
+
+  public boolean isCompleted() {
+    return this.status == OrderStatus.COMPLETED;
+  }
+
+  private boolean isCancellable() {
+    return this.status == OrderStatus.PAYMENT_PENDING
+        || this.status == OrderStatus.PAID
+        || this.status == OrderStatus.COMPLETED;
+  }
+
+  public void cancelMentoring(OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
     transitionTo(OrderStatus.CANCELED);
+    events.mentoringOrderCanceled(
+        new MentoringOrderCanceledEvent(
+            this.id, this.orderer.getStudentId(), this.items.getFirst().getEnrollmentId()));
+  }
+
+  public void cancelLecture(OrderEvents events) {
+    Objects.requireNonNull(events, OrderErrorCode.MISSING_ORDER_ORDER_EVENTS.getMessage());
+    transitionTo(OrderStatus.CANCELED);
+    events.lectureOrderCanceled(
+        new LectureOrderCanceledEvent(
+            this.id,
+            this.orderer.getStudentId(),
+            this.items.stream().map(OrderItem::getEnrollmentId).toList()));
   }
 
   public void cancelItem(UUID itemId) {
@@ -198,6 +252,24 @@ public class Order extends BaseAudit {
 
     if (itemSpecs.stream().anyMatch(Objects::isNull)) {
       throw new InvalidOrderException(OrderErrorCode.NULL_ORDER_ITEM);
+    }
+  }
+
+  public void validateAmount(Long amount) {
+    if (!Objects.equals(this.price.getFinalPrice(), amount)) {
+      throw new InvalidOrderException(OrderErrorCode.INVALID_ORDER_AMOUNT);
+    }
+  }
+
+  public void validateCancel(CancelReason reason, String cancelDescription) {
+    if (!isCancellable()) {
+      throw new InvalidOrderException(OrderErrorCode.INVALID_ORDER_STATUS);
+    }
+    if (reason == null) {
+      throw new InvalidOrderException(OrderErrorCode.MISSING_CANCEL_REASON);
+    }
+    if (cancelDescription.length() >= 100) {
+      throw new InvalidOrderException(OrderErrorCode.INVALID_CANCEL_DESCRIPTION);
     }
   }
 }

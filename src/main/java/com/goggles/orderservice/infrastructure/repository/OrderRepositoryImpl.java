@@ -21,6 +21,11 @@ public class OrderRepositoryImpl implements OrderRepository {
   }
 
   @Override
+  public Optional<Order> getOrderById(UUID orderId) {
+    return orderJpaRepository.findById(orderId);
+  }
+
+  @Override
   public Page<Order> getOrderPage(OrderPageQuery query) {
     return orderQueryDslRepository.getOrderPage(query);
   }

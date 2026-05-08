@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 public interface OrderRepository {
   Optional<Order> getOrderByIdAndUserId(UUID orderId, UUID userId);
 
+  Optional<Order> getOrderById(UUID orderId);
+
   Page<Order> getOrderPage(OrderPageQuery query);
 
   Order createOrder(Order order);
