@@ -3,6 +3,7 @@ package com.goggles.orderservice.infrastructure.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goggles.common.event.annotation.IdempotentConsumer;
+import com.goggles.common.util.TimeUtil;
 import com.goggles.orderservice.application.dto.command.CompleteOrderPaymentCommand;
 import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.infrastructure.event.PaymentApprovedEvent;
@@ -42,7 +43,7 @@ public class PaymentApprovedConsumer {
           event.orderId(),
           event.paymentKey(),
           event.amount(),
-          event.approvedAt(),
+          TimeUtil.toLocalDateTime(event.approvedAt()),
           event.paymentMethod());
     } catch (JsonProcessingException e) {
       throw new InvalidPaymentEventPayloadException();

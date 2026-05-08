@@ -1,8 +1,9 @@
 package com.goggles.orderservice.domain.event;
 
 import com.goggles.orderservice.domain.model.Order;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
+import com.goggles.common.util.TimeUtil;
 
 public record NotificationOrderCanceledEvent(
     UUID orderId,
@@ -10,7 +11,7 @@ public record NotificationOrderCanceledEvent(
     String customerName,
     String orderName,
     Long amount,
-    LocalDateTime cancelledAt,
+    Instant cancelledAt,
     String cancelReason) {
   public static NotificationOrderCanceledEvent from(Order order) {
     return new NotificationOrderCanceledEvent(
@@ -19,7 +20,7 @@ public record NotificationOrderCanceledEvent(
         order.getOrderer().getStudentName(),
         order.getOrderName(),
         order.getPrice().getFinalPrice(),
-        order.getCanceledAt(),
+        TimeUtil.toInstant(order.getCanceledAt()),
         order.getCancelReason().name());
   }
 }
