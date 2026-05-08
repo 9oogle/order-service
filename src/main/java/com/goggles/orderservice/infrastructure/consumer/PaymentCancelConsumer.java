@@ -49,7 +49,10 @@ public class PaymentCancelConsumer {
     try {
       PaymentCancelEvent event = objectMapper.readValue(value, PaymentCancelEvent.class);
       return new CancelOrderPaymentCommand(
-          event.orderId(), event.amount(), TimeUtil.toLocalDateTime(event.cancelAt()), event.cancelReason());
+          event.orderId(),
+          event.amount(),
+          TimeUtil.toLocalDateTime(event.cancelAt()),
+          event.cancelReason());
     } catch (JsonProcessingException e) {
       throw new InvalidPaymentEventPayloadException();
     }

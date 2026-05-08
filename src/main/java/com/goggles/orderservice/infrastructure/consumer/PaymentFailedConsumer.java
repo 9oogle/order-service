@@ -49,7 +49,10 @@ public class PaymentFailedConsumer {
     try {
       PaymentFailedEvent event = objectMapper.readValue(value, PaymentFailedEvent.class);
       return new FailOrderPaymentCommand(
-          event.orderId(), event.amount(), TimeUtil.toLocalDateTime(event.failedAt()), event.failureReason());
+          event.orderId(),
+          event.amount(),
+          TimeUtil.toLocalDateTime(event.failedAt()),
+          event.failureReason());
     } catch (JsonProcessingException e) {
       throw new InvalidPaymentEventPayloadException();
     }

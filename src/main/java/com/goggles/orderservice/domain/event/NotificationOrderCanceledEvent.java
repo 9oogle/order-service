@@ -1,9 +1,9 @@
 package com.goggles.orderservice.domain.event;
 
+import com.goggles.common.util.TimeUtil;
 import com.goggles.orderservice.domain.model.Order;
 import java.time.Instant;
 import java.util.UUID;
-import com.goggles.common.util.TimeUtil;
 
 public record NotificationOrderCanceledEvent(
     UUID orderId,
