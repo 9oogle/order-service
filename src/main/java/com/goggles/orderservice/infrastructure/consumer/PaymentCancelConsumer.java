@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -26,14 +27,22 @@ public class PaymentCancelConsumer {
 
   @KafkaListener(topics = TOPIC, groupId = GROUP_NAME)
   @IdempotentConsumer(GROUP_NAME)
-  public void consume(ConsumerRecord<String, String> record) {
+  public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
     log.info(
         "[Kafka] Received {} | partition={}, offset={}",
         TOPIC,
         record.partition(),
         record.offset());
 
-    orderCommandService.cancelOrderPayment(toCommand(record.value()));
+    try {
+      orderCommandService.cancelOrderPayment(toCommand(record.value()));
+      ack.acknowledge();
+    } catch (InvalidPaymentEventPayloadException e) {
+      log.error("페이로드 파싱 실패, 스킵 처리: {}", record.value());
+      ack.acknowledge();
+    } catch (Exception e) {
+      log.error("처리 실패, 재처리 예정: {}", record.value());
+    }
   }
 
   private CancelOrderPaymentCommand toCommand(String value) {
