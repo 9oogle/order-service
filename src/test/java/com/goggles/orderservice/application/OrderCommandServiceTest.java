@@ -367,9 +367,9 @@ class OrderCommandServiceTest {
               CancelReason.USER_CANCEL.name(),
               "그냥요");
 
-      Order order = createLectureOrderEntity();
+      Order order = createMentoringOrderEntity();
       order.pay("payment", "TOSS");
-      order.completeLecture(orderEvents);
+      order.completeMentoring(orderEvents);
 
       given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID))
           .willReturn(Optional.of(order));
@@ -396,7 +396,7 @@ class OrderCommandServiceTest {
               CancelReason.USER_CANCEL.name(),
               "그냥요");
 
-      Order order = createLectureOrderEntity();
+      Order order = createMentoringOrderEntity();
 
       given(orderRepository.getOrderByIdAndUserId(ORDER_ID, USER_ID))
           .willReturn(Optional.of(order));
@@ -429,7 +429,7 @@ class OrderCommandServiceTest {
       assertThatThrownBy(() -> orderCommandService.cancelMentoringOrder(command))
           .isInstanceOf(NotFoundOrderException.class);
 
-      then(lectureProvider).shouldHaveNoInteractions();
+      then(mentoringProvider).shouldHaveNoInteractions();
     }
   }
 }
