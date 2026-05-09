@@ -36,7 +36,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Create mentoring schema
+      - name: Create order_db schema
         run: PGPASSWORD=goggles psql -h localhost -U goggles -d goggles -c "CREATE SCHEMA IF NOT EXISTS order_db;"
 
       - name: Grant execute permission for gradlew

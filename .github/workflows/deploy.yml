@@ -144,12 +144,12 @@ jobs:
       - name: Set compose file
         id: vars
         run: |
-          if [ "${{ github.ref_name }}" = "main" ] && [ -f "docker-compose.prod.yml" ]; then
+          if [ "${{ github.ref_name }}" = "main" ] && [ -f "deploy/docker-compose.prod.yml" ]; then
             echo "compose=docker-compose.prod.yml" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref_name }}" != "main" ] && [ -f "docker-compose.dev.yml" ]; then
+          elif [ "${{ github.ref_name }}" != "main" ] && [ -f "deploy/docker-compose.dev.yml" ]; then
             echo "compose=docker-compose.dev.yml" >> $GITHUB_OUTPUT
           else
-            echo "compose=docker-compose.yml" >> $GITHUB_OUTPUT
+            echo "deploy/compose=docker-compose.yml" >> $GITHUB_OUTPUT
           fi
 
       - name: Copy compose file
@@ -190,11 +190,8 @@ jobs:
             # .env 업데이트
             upsert_env() {
               local KEY="$1" VAL="$2"
-              if grep -q "^${KEY}=" "$ENV_FILE" 2>/dev/null; then
-                sed -i "s|^${KEY}=.*|${KEY}=${VAL}|" "$ENV_FILE"
-              else
-                echo "${KEY}=${VAL}" >> "$ENV_FILE"
-              fi
+              sed -i "/^${KEY}=/d" "$ENV_FILE" 2>/dev/null || true
+              printf '%s=%s\n' "$KEY" "$VAL" >> "$ENV_FILE"
             }
 
             upsert_env IMAGE_TAG "$NEW_TAG"
