@@ -38,10 +38,10 @@ public class PaymentFailedConsumer {
       orderCommandService.failOrderPayment(toCommand(record.value()));
       ack.acknowledge();
     } catch (InvalidPaymentEventPayloadException e) {
-      log.error("페이로드 파싱 실패, 스킵 처리: {}", record.value());
+      log.error("페이로드 파싱 실패, 스킵 처리: {}", record.value(), e);
       ack.acknowledge();
     } catch (Exception e) {
-      log.error("처리 실패, 재처리 예정: {}", record.value());
+      log.error("처리 실패, 재처리 예정: {}", record.value(), e);
     }
   }
 
