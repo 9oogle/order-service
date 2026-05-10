@@ -6,7 +6,7 @@ permissions:
 
 on:
   push:
-    branches: [ "dev", "main" ]
+    branches: [ "dev", "main", "feat/24-refactor-order" ]
   workflow_dispatch:
 
 env:
