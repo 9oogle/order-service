@@ -46,7 +46,8 @@ public class PaymentCancelConsumer {
           e);
       ack.acknowledge();
     } catch (Exception e) {
-      log.error("처리 실패, 재처리 예정 topic={}, partition={}, offset={}",
+      log.error(
+          "처리 실패, 재처리 예정 topic={}, partition={}, offset={}",
           TOPIC,
           record.partition(),
           record.offset(),
