@@ -1,6 +1,6 @@
 package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.OrderErrorCode;
 import java.util.EnumSet;
 import java.util.Set;
@@ -68,7 +68,7 @@ public enum OrderStatus {
     try {
       return OrderStatus.valueOf(value.toUpperCase());
     } catch (IllegalArgumentException e) {
-      throw new BadRequestException(OrderErrorCode.INVALID_ORDER_STATUS + value);
+      throw new InvalidOrderException(OrderErrorCode.INVALID_ORDER_STATUS, value);
     }
   }
 }
