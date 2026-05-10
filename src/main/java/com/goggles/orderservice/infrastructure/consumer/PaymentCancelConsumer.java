@@ -38,10 +38,20 @@ public class PaymentCancelConsumer {
       orderCommandService.cancelOrderPayment(toCommand(record.value()));
       ack.acknowledge();
     } catch (InvalidPaymentEventPayloadException e) {
-      log.error("페이로드 파싱 실패, 스킵 처리: {}", record.value(), e);
+      log.error(
+          "페이로드 파싱 실패, 스킵 처리 topic={}, partition={}, offset={}",
+          TOPIC,
+          record.partition(),
+          record.offset(),
+          e);
       ack.acknowledge();
     } catch (Exception e) {
-      log.error("처리 실패, 재처리 예정: {}", record.value(), e);
+      log.error("처리 실패, 재처리 예정 topic={}, partition={}, offset={}",
+          TOPIC,
+          record.partition(),
+          record.offset(),
+          e);
+      throw new RuntimeException("payment.canceled 처리 실패", e);
     }
   }
 
