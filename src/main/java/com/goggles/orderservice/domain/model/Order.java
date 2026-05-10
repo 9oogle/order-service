@@ -8,7 +8,7 @@ import com.goggles.orderservice.domain.event.MentoringOrderCompletionEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.event.OrderPaymentCanceledEvent;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
-import com.goggles.orderservice.domain.exception.DuplicateOrderItemException;
+import com.goggles.orderservice.domain.exception.ConflictOrderException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.NotFoundOrderItemException;
 import com.goggles.orderservice.domain.exception.OrderErrorCode;
@@ -238,7 +238,7 @@ public class Order extends BaseAudit {
                         && i.getProduct().getProductType() == item.getProduct().getProductType());
 
     if (duplicated) {
-      throw new DuplicateOrderItemException();
+      throw new ConflictOrderException(OrderErrorCode.DUPLICATE_ORDER_ITEM);
     }
 
     this.items.add(item);
@@ -263,7 +263,7 @@ public class Order extends BaseAudit {
 
   public void validateCancel(CancelReason reason, String cancelDescription) {
     if (!isCancellable()) {
-      throw new InvalidOrderException(OrderErrorCode.INVALID_ORDER_STATUS);
+      throw new ConflictOrderException(OrderErrorCode.ORDER_CANNOT_BE_CANCELLED);
     }
     if (reason == null) {
       throw new InvalidOrderException(OrderErrorCode.MISSING_CANCEL_REASON);

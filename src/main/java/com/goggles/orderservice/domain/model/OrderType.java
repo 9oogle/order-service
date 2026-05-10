@@ -1,6 +1,7 @@
 package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidOrderException;
+import com.goggles.orderservice.domain.exception.OrderErrorCode;
 import java.util.Arrays;
 
 public enum OrderType {
@@ -9,11 +10,11 @@ public enum OrderType {
 
   public static OrderType from(String value) {
     if (value == null) {
-      throw new BadRequestException("주문 타입은 필수입니다.");
+      throw new InvalidOrderException(OrderErrorCode.MISSING_ORDER_TYPE);
     }
     return Arrays.stream(values())
         .filter(t -> t.name().equalsIgnoreCase(value))
         .findFirst()
-        .orElseThrow(() -> new BadRequestException("유효하지 않은 주문 타입입니다."));
+        .orElseThrow(() -> new InvalidOrderException(OrderErrorCode.INVALID_ORDER_TYPE, value));
   }
 }

@@ -20,23 +20,17 @@ public class TestOrderController {
   private final OrderCommandService orderCommandService;
 
   @PostMapping("/complete")
-  public void completeOrderPaymentTest(
-      @RequestBody CompleteOrderPaymentCommand command
-  ){
+  public void completeOrderPaymentTest(@RequestBody CompleteOrderPaymentCommand command) {
     orderCommandService.completeOrderPayment(command);
   }
 
   @PostMapping("/fail")
-  public void failOrderPaymentTest(
-      @RequestBody FailOrderPaymentCommand command
-  ){
+  public void failOrderPaymentTest(@RequestBody FailOrderPaymentCommand command) {
     orderCommandService.failOrderPayment(command);
   }
 
   @PostMapping("/cancel")
-  public void cancelOrderPaymentTest(
-      @RequestBody CancelOrderPaymentCommand command
-  ){
+  public void cancelOrderPaymentTest(@RequestBody CancelOrderPaymentCommand command) {
     orderCommandService.cancelOrderPayment(command);
   }
 }
