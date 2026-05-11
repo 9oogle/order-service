@@ -15,6 +15,7 @@ import com.goggles.orderservice.presentation.dto.CreateOrderResponse;
 import com.goggles.orderservice.presentation.dto.OrderDetailResponse;
 import com.goggles.orderservice.presentation.dto.OrderListResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -76,21 +77,23 @@ public class OrderController {
         orderCommandService.createLectureOrder(request.toCommand(userId, userRole)));
   }
 
-  @PostMapping("/mentoring/cancellation")
+  @PostMapping("/mentoring/{orderId}/cancellation")
   public CancelOrderResponse cancelMentoringOrder(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
+      @PathVariable("orderId") @NotNull(message = "주문 ID는 필수입니다.") UUID orderId,
       @Valid @RequestBody CancelMentoringOrderRequest request) {
     return CancelOrderResponse.from(
-        orderCommandService.cancelMentoringOrder(request.toCommand(userId, userRole)));
+        orderCommandService.cancelMentoringOrder(request.toCommand(userId, userRole, orderId)));
   }
 
-  @PostMapping("/lecture/cancellation")
+  @PostMapping("/lecture/{orderId}/cancellation")
   public CancelOrderResponse cancelLectureOrder(
       @RequestHeader("X-User-Id") UUID userId,
       @RequestHeader("X-User-Role") String userRole,
+      @PathVariable("orderId") @NotNull(message = "주문 ID는 필수입니다.") UUID orderId,
       @Valid @RequestBody CancelLectureOrderRequest request) {
     return CancelOrderResponse.from(
-        orderCommandService.cancelLectureOrder(request.toCommand(userId, userRole)));
+        orderCommandService.cancelLectureOrder(request.toCommand(userId, userRole, orderId)));
   }
 }
