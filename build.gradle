@@ -47,7 +47,7 @@ clean {
 
 dependencies {
 	// common-library
-	implementation("com.goggles:common-library:1.0.4")
+	implementation("com.goggles:common-library:1.0.6")
 
 	// spring boot
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

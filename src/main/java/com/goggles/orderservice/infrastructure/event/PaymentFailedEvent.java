@@ -1,7 +1,7 @@
 package com.goggles.orderservice.infrastructure.event;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record PaymentFailedEvent(
-    UUID orderId, Long amount, LocalDateTime failedAt, String failureReason) {}
+    UUID orderId, Long amount, Instant failedAt, String failureReason) {}

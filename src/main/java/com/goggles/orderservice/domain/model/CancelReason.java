@@ -1,6 +1,7 @@
 package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidOrderException;
+import com.goggles.orderservice.domain.exception.OrderErrorCode;
 
 public enum CancelReason {
   PAYMENT_FAIL,
@@ -11,11 +12,13 @@ public enum CancelReason {
   TIMEOUT;
 
   public static CancelReason from(String value) {
-    if (value == null || value.isBlank()) throw new BadRequestException("취소 원인은 필수입니다.");
+    if (value == null || value.isBlank()) {
+      throw new InvalidOrderException(OrderErrorCode.MISSING_CANCEL_REASON);
+    }
     try {
       return CancelReason.valueOf(value.toUpperCase());
     } catch (IllegalArgumentException e) {
-      throw new BadRequestException("유효하지 않은 취소 원인입니다: " + value);
+      throw new InvalidOrderException(OrderErrorCode.INVALID_CANCEL_REASON, value);
     }
   }
 }

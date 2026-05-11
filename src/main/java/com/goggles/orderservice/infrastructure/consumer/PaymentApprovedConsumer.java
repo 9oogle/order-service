@@ -3,6 +3,7 @@ package com.goggles.orderservice.infrastructure.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goggles.common.event.annotation.IdempotentConsumer;
+import com.goggles.common.util.TimeUtil;
 import com.goggles.orderservice.application.dto.command.CompleteOrderPaymentCommand;
 import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.infrastructure.event.PaymentApprovedEvent;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -25,14 +27,33 @@ public class PaymentApprovedConsumer {
 
   @KafkaListener(topics = TOPIC, groupId = GROUP_NAME)
   @IdempotentConsumer(GROUP_NAME)
-  public void consume(ConsumerRecord<String, String> record) {
+  public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
     log.info(
         "[Kafka] Received {} | partition={}, offset={}",
         TOPIC,
         record.partition(),
         record.offset());
 
-    orderCommandService.completeOrderPayment(toCommand(record.value()));
+    try {
+      orderCommandService.completeOrderPayment(toCommand(record.value()));
+      ack.acknowledge();
+    } catch (InvalidPaymentEventPayloadException e) {
+      log.error(
+          "페이로드 파싱 실패, 스킵 처리 topic={}, partition={}, offset={}",
+          TOPIC,
+          record.partition(),
+          record.offset(),
+          e);
+      ack.acknowledge();
+    } catch (Exception e) {
+      log.error(
+          "처리 실패, 재처리 예정 topic={}, partition={}, offset={}",
+          TOPIC,
+          record.partition(),
+          record.offset(),
+          e);
+      throw new RuntimeException("payment.approved 처리 실패", e);
+    }
   }
 
   private CompleteOrderPaymentCommand toCommand(String value) {
@@ -42,7 +63,7 @@ public class PaymentApprovedConsumer {
           event.orderId(),
           event.paymentKey(),
           event.amount(),
-          event.approvedAt(),
+          TimeUtil.toLocalDateTime(event.approvedAt()),
           event.paymentMethod());
     } catch (JsonProcessingException e) {
       throw new InvalidPaymentEventPayloadException();

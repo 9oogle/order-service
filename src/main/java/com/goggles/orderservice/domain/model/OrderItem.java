@@ -1,6 +1,7 @@
 package com.goggles.orderservice.domain.model;
 
 import com.goggles.common.domain.BaseAudit;
+import com.goggles.orderservice.domain.exception.ConflictOrderException;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.OrderErrorCode;
 import jakarta.persistence.Column;
@@ -55,7 +56,7 @@ public class OrderItem extends BaseAudit {
 
   void assignOrder(Order order) {
     if (this.order != null) {
-      throw new InvalidOrderException(OrderErrorCode.ALREADY_ASSIGNED_ORDER);
+      throw new ConflictOrderException(OrderErrorCode.ALREADY_ASSIGNED_ORDER);
     }
     this.order = order;
   }

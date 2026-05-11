@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     env_file:
-      - .env
+      - ../.env
     volumes:
       - ./script:/docker-entrypoint-initdb.d
       - postgres-data:/var/lib/postgresql/data
@@ -19,6 +19,15 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks:
+      - goggles-network
+    restart: unless-stopped
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: goggles-zipkin
+    ports:
+      - "9411:9411"
     networks:
       - goggles-network
     restart: unless-stopped
@@ -45,6 +54,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     volumes:
       - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     networks:
       - goggles-network
     restart: unless-stopped

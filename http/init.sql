@@ -121,7 +121,7 @@ INSERT INTO order_db.p_order (
     canceled_at, cancel_reason, cancel_description,
     created_by, updated_by,
     coupon_id, coupon_discount_rate, coupon_name, coupon_code,
-    payment_name, payment_key
+    payment_name, payment_key, order_type
 ) VALUES (
              v_order_id,
              user_ids[v_user_idx],
@@ -146,7 +146,8 @@ INSERT INTO order_db.p_order (
              CASE
                  WHEN v_status = 'PAYMENT_FAILED' THEN NULL
                  ELSE 'pay_' || floor(random()*100000)
-                 END
+                 END,
+             (ARRAY['LECTURE','MENTORING'])[floor(random()*2)+1]
          );
 
 -- 아이템 생성

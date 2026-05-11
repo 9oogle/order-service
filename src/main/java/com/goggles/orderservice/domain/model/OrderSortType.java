@@ -1,6 +1,7 @@
 package com.goggles.orderservice.domain.model;
 
-import com.goggles.common.exception.BadRequestException;
+import com.goggles.orderservice.domain.exception.InvalidOrderException;
+import com.goggles.orderservice.domain.exception.OrderErrorCode;
 import java.util.Arrays;
 
 public enum OrderSortType {
@@ -20,6 +21,7 @@ public enum OrderSortType {
     return Arrays.stream(values())
         .filter(t -> t.value.equalsIgnoreCase(value))
         .findFirst()
-        .orElseThrow(() -> new BadRequestException("유효하지 않은 정렬 조건입니다."));
+        .orElseThrow(
+            () -> new InvalidOrderException(OrderErrorCode.INVALID_ORDER_SORT_TYPE, value));
   }
 }
