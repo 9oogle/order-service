@@ -10,6 +10,8 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: "${HEALTH_CHECK_PORT}"
+    volumes:
+      - ./ssl:/app/ssl:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:${HEALTH_CHECK_PORT}/actuator/health 2>/dev/null | grep -q UP || exit 1"]
       interval: 10s

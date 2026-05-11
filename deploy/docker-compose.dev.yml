@@ -14,6 +14,8 @@ services:
       SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL}"
       KAFKA_BOOTSTRAP_SERVERS: "${KAFKA_BOOTSTRAP_SERVERS}"
       MONITORING_HOST: "${MONITORING_HOST}"
+    volumes:
+      - ./ssl:/app/ssl:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:${HEALTH_CHECK_PORT}/actuator/health 2>/dev/null | grep -q UP || exit 1"]
       interval: 10s

@@ -227,12 +227,37 @@ jobs:
             SERVICE="${{ vars.SERVICE_NAME }}"
             export SERVICE_NAME="$SERVICE"  # ← SERVICE 변수 재활용
             export HEALTH_CHECK_PORT="${{ vars.HEALTH_CHECK_PORT }}"
-                      
+
+            # Kafka SSL truststore 복원
+            TRUSTSTORE_B64="${{ secrets.TRUSTSTORE_JKS_B64 }}"
+            echo "[SSL] TRUSTSTORE_JKS_B64 secret 길이: ${#TRUSTSTORE_B64}"
+            if [ -z "$TRUSTSTORE_B64" ]; then
+              echo "[SSL] ❌ TRUSTSTORE_JKS_B64 secret이 비어있음"
+              exit 1
+            fi
+            echo "$TRUSTSTORE_B64" | base64 -d > $APP_DIR/ssl/kafka.truststore.jks
+            FILE_SIZE=$(stat -c%s "$APP_DIR/ssl/kafka.truststore.jks")
+            echo "[SSL] ✅ 파일 생성 완료 (크기: ${FILE_SIZE} bytes)"
+            if [ "$FILE_SIZE" -eq 0 ]; then
+              echo "[SSL] ❌ 파일이 비어있음 — base64 디코딩 실패"
+              exit 1
+            fi
+            echo "[SSL] 호스트 경로: $(ls -lh $APP_DIR/ssl/kafka.truststore.jks)"
+            echo "[SSL] 파일 타입: $(file $APP_DIR/ssl/kafka.truststore.jks)"
+
             # 새 이미지 pull & 재시작
             COMPOSE_FILE="deploy/${{ steps.vars.outputs.compose }}"
+            echo "[COMPOSE] 사용 파일: $APP_DIR/$COMPOSE_FILE"
+            echo "[COMPOSE] volume 설정:"
+            grep -A2 'volumes' $APP_DIR/$COMPOSE_FILE || echo "[COMPOSE] volumes 항목 없음"
             docker rm -f "goggles-${SERVICE}" 2>/dev/null || true
             docker compose --env-file $ENV_FILE --project-directory $APP_DIR -f $COMPOSE_FILE pull $SERVICE
             docker compose --env-file $ENV_FILE --project-directory $APP_DIR -f $COMPOSE_FILE up -d $SERVICE
+
+            # 컨테이너 내부 파일 확인
+            sleep 5
+            echo "[SSL] 컨테이너 내부 /app/ssl/ 확인:"
+            docker exec "goggles-${SERVICE}" ls -lh /app/ssl/ 2>&1 || echo "[SSL] 컨테이너 exec 실패"
 
             # Health check (30초 간격, 최대 8회)
             echo "Health check 시작... (port: ${{ vars.HEALTH_CHECK_PORT }})"
