@@ -7,15 +7,14 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CancelMentoringOrderRequest(
-    @NotNull(message = "주문 ID는 필수입니다.") UUID orderId,
     @NotNull(message = "예약 ID는 필수입니다.") UUID enrollmentId,
     @NotBlank(message = "취소 이유는 필수입니다.") String cancelReason,
     String cancelDescription) {
-  public CancelMentoringOrderCommand toCommand(UUID userId, String userRole) {
+  public CancelMentoringOrderCommand toCommand(UUID userId, String userRole, UUID orderId) {
     return new CancelMentoringOrderCommand(
         userId,
         UserRole.from(userRole),
-        this.orderId,
+        orderId,
         this.enrollmentId,
         this.cancelReason,
         this.cancelDescription);
