@@ -11,6 +11,7 @@ import com.goggles.orderservice.domain.event.OrderEvents;
 import com.goggles.orderservice.domain.event.OrderFailedEvent;
 import com.goggles.orderservice.domain.event.OrderPaymentCanceledEvent;
 import com.goggles.orderservice.domain.event.OrderPaymentPendingEvent;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -95,7 +96,11 @@ public class OrderEventsImpl implements OrderEvents {
 
   @Override
   public void orderFailed(OrderFailedEvent event) {
+    String aggregateKey = event.orderId() != null ? event.orderId().toString()
+        : event.customerId() != null ? event.customerId().toString()
+            : UUID.randomUUID().toString();
+
     events.trigger(
-        event.orderId().toString() + ":order-failed", DOMAIN, orderTopics.orderFailed(), event);
+        aggregateKey + ":order-failed", DOMAIN, orderTopics.orderFailed(), event);
   }
 }
