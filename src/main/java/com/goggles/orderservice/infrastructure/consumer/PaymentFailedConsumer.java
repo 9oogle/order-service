@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PaymentFailedConsumer {
-  public static final String TOPIC = "payment.failed";
+  public static final String TOPIC = "payment.failed.v1";
   public static final String GROUP_NAME = "order-service.payment-failed";
 
   private final OrderCommandService orderCommandService;

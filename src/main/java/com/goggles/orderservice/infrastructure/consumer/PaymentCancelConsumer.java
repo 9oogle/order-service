@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PaymentCancelConsumer {
-  public static final String TOPIC = "payment.canceled";
+  public static final String TOPIC = "payment.canceled.v1";
   public static final String GROUP_NAME = "order-service.payment-canceled";
 
   private final OrderCommandService orderCommandService;

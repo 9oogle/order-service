@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PaymentApprovedConsumer {
-  public static final String TOPIC = "payment.approved";
-  public static final String GROUP_NAME = "order-service.payment-approved";
+  public static final String TOPIC = "payment.confirmed.v1";
+  public static final String GROUP_NAME = "order-service.payment-confirmed";
 
   private final OrderCommandService orderCommandService;
   private final ObjectMapper objectMapper;
