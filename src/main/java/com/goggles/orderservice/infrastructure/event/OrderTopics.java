@@ -6,9 +6,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record OrderTopics(
     String paymentPending,
     String paymentCanceled,
-    String notificationCompleted,
-    String notificationCanceled,
+    String orderCompleted,
+    String orderCanceled,
+    String orderFailed,
     String lectureCompleted,
-    String mentoringCompleted,
     String lectureCanceled,
+    String mentoringCompleted,
     String mentoringCanceled) {}
