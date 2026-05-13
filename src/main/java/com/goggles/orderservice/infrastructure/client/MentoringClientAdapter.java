@@ -12,7 +12,7 @@ import com.goggles.orderservice.infrastructure.client.dto.CancelPendingMentoring
 import com.goggles.orderservice.infrastructure.client.dto.ReserveMentoringRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import com.goggles.orderservice.infrastructure.client.dto.RollbackMentoringBookingRequest;
-import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
+import com.goggles.orderservice.application.exception.ExternalServiceException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;

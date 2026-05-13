@@ -1,4 +1,4 @@
-package com.goggles.orderservice.infrastructure.client.exception;
+package com.goggles.orderservice.application.exception;
 
 import com.goggles.common.exception.InternalServerException;
 
