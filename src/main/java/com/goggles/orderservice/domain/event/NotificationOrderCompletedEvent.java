@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record NotificationOrderCompletedEvent(
     UUID orderId,
+    UUID customerId,
     String customerEmail,
     String customerName,
     String orderName,
@@ -16,6 +17,7 @@ public record NotificationOrderCompletedEvent(
   public static NotificationOrderCompletedEvent of(Order order, LocalDateTime approvedAt) {
     return new NotificationOrderCompletedEvent(
         order.getId(),
+        order.getOrderer().getStudentId(),
         order.getOrderer().getStudentEmail(),
         order.getOrderer().getStudentName(),
         order.getOrderName(),
