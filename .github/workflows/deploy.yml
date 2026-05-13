@@ -6,7 +6,7 @@ permissions:
 
 on:
   push:
-    branches: [ "dev", "main", "feat/24-refactor-order" ]
+    branches: [ "dev", "main", "refactor/18-refactor-order-code"]
   workflow_dispatch:
 
 env:
@@ -139,28 +139,50 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        run: |
+          docker image prune -af --filter "until=1h"
+          df -h
+
       - uses: actions/checkout@v4
 
       - name: Set compose file
         id: vars
         run: |
+          echo "=== Current branch: ${{ github.ref_name }} ==="
+          echo "=== Files in deploy/: ==="
+          ls -la deploy/
+
           if [ "${{ github.ref_name }}" = "main" ] && [ -f "deploy/docker-compose.prod.yml" ]; then
             echo "compose=docker-compose.prod.yml" >> $GITHUB_OUTPUT
+            echo "=== Selected: docker-compose.prod.yml ==="
           elif [ "${{ github.ref_name }}" != "main" ] && [ -f "deploy/docker-compose.dev.yml" ]; then
             echo "compose=docker-compose.dev.yml" >> $GITHUB_OUTPUT
+            echo "=== Selected: docker-compose.dev.yml ==="
           else
-            echo "deploy/compose=docker-compose.yml" >> $GITHUB_OUTPUT
+            echo "compose=docker-compose.yml" >> $GITHUB_OUTPUT
+            echo "=== Selected: docker-compose.yml (fallback) ==="
           fi
+          
+          echo "=== Final output value ==="
+          cat $GITHUB_OUTPUT
+
+      - name: Encode compose file
+        id: encode
+        run: echo "content=$(base64 -w0 deploy/${{ steps.vars.outputs.compose }})" >> $GITHUB_OUTPUT
 
       - name: Copy compose file
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ vars.VM_USER }}
           port: ${{ vars.VM_SSH_PORT }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: "${{ steps.vars.outputs.compose }}"
-          target: "${{ vars.APP_DIR }}"
+          script: |
+            docker image prune -af
+            docker container prune -f
+            mkdir -p ${{ vars.APP_DIR }}/deploy ${{ vars.APP_DIR }}/ssl
+            echo "${{ steps.encode.outputs.content }}" | base64 -d > ${{ vars.APP_DIR }}/deploy/${{ steps.vars.outputs.compose }}
 
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1
@@ -177,7 +199,7 @@ jobs:
             NEW_TAG="${{ github.sha }}"
             export IMAGE="${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.SERVICE_NAME }}"
             ENV_FILE="$APP_DIR/.env"
-
+            
             cd $APP_DIR
 
             # 롤백용 이전 태그 저장
@@ -195,15 +217,47 @@ jobs:
             }
 
             upsert_env IMAGE_TAG "$NEW_TAG"
+            upsert_env SERVICE_NAME "${{ vars.SERVICE_NAME }}"
+            upsert_env HEALTH_CHECK_PORT "${{ vars.HEALTH_CHECK_PORT }}"
             upsert_env SPRING_DATASOURCE_URL "${{ secrets.DB_URL }}/${{ vars.DB_SCHEMA }}"
             upsert_env EUREKA_CLIENT_SERVICEURL_DEFAULTZONE "http://${{ secrets.VM_HOST }}:9001/eureka/"
             upsert_env KAFKA_BOOTSTRAP_SERVERS "${{ secrets.KAFKA_1_INTERNAL_IP }}:9092,${{ secrets.KAFKA_2_INTERNAL_IP }}:9092,${{ secrets.KAFKA_3_INTERNAL_IP }}:9092"
             upsert_env MONITORING_HOST "${{ secrets.MONITORING_VM_HOST }}"
 
+            SERVICE="${{ vars.SERVICE_NAME }}"
+            export SERVICE_NAME="$SERVICE"  # ← SERVICE 변수 재활용
+            export HEALTH_CHECK_PORT="${{ vars.HEALTH_CHECK_PORT }}"
+
+            # Kafka SSL truststore 복원
+            TRUSTSTORE_B64="${{ secrets.TRUSTSTORE_JKS_B64 }}"
+            echo "[SSL] TRUSTSTORE_JKS_B64 secret 길이: ${#TRUSTSTORE_B64}"
+            if [ -z "$TRUSTSTORE_B64" ]; then
+              echo "[SSL] ❌ TRUSTSTORE_JKS_B64 secret이 비어있음"
+              exit 1
+            fi
+            echo "$TRUSTSTORE_B64" | base64 -d > $APP_DIR/ssl/kafka.truststore.jks
+            FILE_SIZE=$(stat -c%s "$APP_DIR/ssl/kafka.truststore.jks")
+            echo "[SSL] ✅ 파일 생성 완료 (크기: ${FILE_SIZE} bytes)"
+            if [ "$FILE_SIZE" -eq 0 ]; then
+              echo "[SSL] ❌ 파일이 비어있음 — base64 디코딩 실패"
+              exit 1
+            fi
+            echo "[SSL] 호스트 경로: $(ls -lh $APP_DIR/ssl/kafka.truststore.jks)"
+            echo "[SSL] 파일 타입: $(file $APP_DIR/ssl/kafka.truststore.jks)"
+
             # 새 이미지 pull & 재시작
-            COMPOSE_FILE="${{ steps.vars.outputs.compose }}"
-            docker compose -f $COMPOSE_FILE pull $SERVICE
-            docker compose -f $COMPOSE_FILE up -d $SERVICE
+            COMPOSE_FILE="deploy/${{ steps.vars.outputs.compose }}"
+            echo "[COMPOSE] 사용 파일: $APP_DIR/$COMPOSE_FILE"
+            echo "[COMPOSE] volume 설정:"
+            grep -A2 'volumes' $APP_DIR/$COMPOSE_FILE || echo "[COMPOSE] volumes 항목 없음"
+            docker rm -f "goggles-${SERVICE}" 2>/dev/null || true
+            docker compose --env-file $ENV_FILE --project-directory $APP_DIR -f $COMPOSE_FILE pull $SERVICE
+            docker compose --env-file $ENV_FILE --project-directory $APP_DIR -f $COMPOSE_FILE up -d $SERVICE
+
+            # 컨테이너 내부 파일 확인
+            sleep 5
+            echo "[SSL] 컨테이너 내부 /app/ssl/ 확인:"
+            docker exec "goggles-${SERVICE}" ls -lh /app/ssl/ 2>&1 || echo "[SSL] 컨테이너 exec 실패"
 
             # Health check (30초 간격, 최대 8회)
             echo "Health check 시작... (port: ${{ vars.HEALTH_CHECK_PORT }})"
@@ -223,7 +277,7 @@ jobs:
             fi
             echo "배포 실패 — $PREV_TAG 로 롤백..."
             sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=$PREV_TAG|" "$ENV_FILE"
-            docker compose -f $COMPOSE_FILE up -d $SERVICE
+            docker compose --project-directory $APP_DIR -f $COMPOSE_FILE up -d $SERVICE
             sleep 30
             if curl -sf "http://localhost:${{ vars.HEALTH_CHECK_PORT }}/actuator/health" > /dev/null; then
               echo "롤백 성공"

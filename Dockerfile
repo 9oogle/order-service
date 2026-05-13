@@ -5,10 +5,7 @@ WORKDIR /app
 COPY build/libs/ libs/
 
 RUN mv "$(find libs -maxdepth 1 -name '*.jar' ! -name '*plain*' | head -1)" app.jar \
-    && rm -rf libs \
-    && addgroup -S appgroup && adduser -S appuser -G appgroup \
-
-USER appuser
+    && rm -rf libs
 
 EXPOSE 8080
 
