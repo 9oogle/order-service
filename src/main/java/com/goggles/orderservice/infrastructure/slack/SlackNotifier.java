@@ -1,5 +1,6 @@
 package com.goggles.orderservice.infrastructure.slack;
 
+import com.goggles.orderservice.application.port.out.SlackProvider;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 @Slf4j
-public class SlackNotifier {
+public class SlackNotifier implements SlackProvider {
 
   private final WebClient slackWebClient;
   private final String channel;
@@ -23,6 +24,7 @@ public class SlackNotifier {
             .build();
   }
 
+  @Override
   public void sendAlert(String message) {
     Map<String, Object> payload =
         Map.of(

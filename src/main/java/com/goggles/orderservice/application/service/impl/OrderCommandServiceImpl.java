@@ -21,6 +21,7 @@ import com.goggles.orderservice.application.dto.result.CancelOrderResult;
 import com.goggles.orderservice.application.dto.result.CreateOrderResult;
 import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
+import com.goggles.orderservice.application.port.out.SlackProvider;
 import com.goggles.orderservice.application.port.out.UserReader;
 import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.domain.event.NotificationOrderCanceledEvent;
@@ -38,8 +39,7 @@ import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
-import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
-import com.goggles.orderservice.infrastructure.slack.SlackNotifier;
+import com.goggles.orderservice.application.exception.ExternalServiceException;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
@@ -57,7 +57,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   private final UserReader userReader;
   private final OrderRepository orderRepository;
   private final OrderEvents orderEvents;
-  private final SlackNotifier slackNotifier;
+  private final SlackProvider slackProvider;
 
   @Override
   @Transactional
@@ -327,7 +327,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           "LECTURE",
           enrollmentIds.toString(),
           userInfo.userId().toString(),
-          userInfo.userEmail(),
           new OrderFailedEvent(
               null, userInfo.userId(), userInfo.userEmail(), "강의 예약 보상 트랜잭션 실패", Instant.now()),
           e);
@@ -345,7 +344,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           "LECTURE",
           enrollmentIds.toString(),
           order.getOrderer().getStudentId().toString(),
-          order.getOrderer().getStudentEmail(),
           OrderFailedEvent.of(order, "강의 예약 보상 트랜잭션 실패"),
           e);
     }
@@ -361,7 +359,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           "MENTORING",
           enrollmentId.toString(),
           userInfo.userId().toString(),
-          userInfo.userEmail(),
           new OrderFailedEvent(
               null, userInfo.userId(), userInfo.userEmail(), "멘토링 예약 보상 트랜잭션 실패", Instant.now()),
           e);
@@ -378,7 +375,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           "MENTORING",
           enrollmentId.toString(),
           order.getOrderer().getStudentId().toString(),
-          order.getOrderer().getStudentEmail(),
           OrderFailedEvent.of(order, "멘토링 예약 보상 트랜잭션 실패"),
           e);
     }
@@ -388,7 +384,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       String type,
       String id,
       String userId,
-      String userEmail,
       OrderFailedEvent event,
       Exception e) {
     String message =
@@ -402,10 +397,14 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             type, id, userId, Instant.now(), e.getMessage());
 
     log.error("보상 트랜잭션 실패. type: {}, id: {}", type, id, e);
-    orderEvents.orderFailed(event);
+    try {
+      orderEvents.orderFailed(event);
+    } catch (Exception eventEx) {
+      log.error("OrderFailedEvent 발행 실패", eventEx);
+    }
 
     try {
-      slackNotifier.sendAlert(message);
+      slackProvider.sendAlert(message);
     } catch (Exception slackEx) {
       log.error("Slack 알림 전송 실패", slackEx);
     }
