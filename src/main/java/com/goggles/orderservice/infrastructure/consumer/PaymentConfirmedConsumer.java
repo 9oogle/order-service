@@ -6,8 +6,8 @@ import com.goggles.common.event.annotation.IdempotentConsumer;
 import com.goggles.common.util.TimeUtil;
 import com.goggles.orderservice.application.dto.command.CompleteOrderPaymentCommand;
 import com.goggles.orderservice.application.service.OrderCommandService;
-import com.goggles.orderservice.infrastructure.event.PaymentApprovedEvent;
-import com.goggles.orderservice.infrastructure.exception.InvalidPaymentEventPayloadException;
+import com.goggles.orderservice.infrastructure.event.PaymentConfirmedEvent;
+import com.goggles.orderservice.infrastructure.event.exception.InvalidPaymentEventPayloadException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PaymentApprovedConsumer {
+public class PaymentConfirmedConsumer {
   public static final String TOPIC = "payment.confirmed.v1";
   public static final String GROUP_NAME = "order-service.payment-confirmed";
 
@@ -52,13 +52,13 @@ public class PaymentApprovedConsumer {
           record.partition(),
           record.offset(),
           e);
-      throw new RuntimeException("payment.approved 처리 실패", e);
+      throw new RuntimeException("payment.confirmed 처리 실패", e);
     }
   }
 
   private CompleteOrderPaymentCommand toCommand(String value) {
     try {
-      PaymentApprovedEvent event = objectMapper.readValue(value, PaymentApprovedEvent.class);
+      PaymentConfirmedEvent event = objectMapper.readValue(value, PaymentConfirmedEvent.class);
       return new CompleteOrderPaymentCommand(
           event.orderId(),
           event.paymentKey(),

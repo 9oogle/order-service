@@ -1,4 +1,4 @@
-package com.goggles.orderservice.infrastructure.exception;
+package com.goggles.orderservice.infrastructure.event.exception;
 
 import com.goggles.common.exception.BadRequestException;
 
