@@ -50,7 +50,7 @@ dependencies {
 	implementation("com.goggles:common-library:1.0.6")
 
 	// slack
-	implementation 'com.slack.api:slack-api-client:1.48.0'
+	implementation 'com.slack.api:slack-api-client:1.48.1'
 
 	// spring boot
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
