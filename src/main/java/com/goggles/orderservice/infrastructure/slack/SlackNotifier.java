@@ -14,22 +14,23 @@ public class SlackNotifier {
   private final String channel;
 
   public SlackNotifier(
-      @Value("${slack.token}") String token,
-      @Value("${slack.channel}") String channel) {
+      @Value("${slack.token}") String token, @Value("${slack.channel}") String channel) {
     this.channel = channel;
-    this.slackWebClient = WebClient.builder()
-        .baseUrl("https://slack.com/api")
-        .defaultHeader("Authorization", "Bearer " + token)
-        .build();
+    this.slackWebClient =
+        WebClient.builder()
+            .baseUrl("https://slack.com/api")
+            .defaultHeader("Authorization", "Bearer " + token)
+            .build();
   }
 
   public void sendAlert(String message) {
-    Map<String, Object> payload = Map.of(
-        "channel", channel,
-        "text", message
-    );
+    Map<String, Object> payload =
+        Map.of(
+            "channel", channel,
+            "text", message);
 
-    slackWebClient.post()
+    slackWebClient
+        .post()
         .uri("/chat.postMessage")
         .bodyValue(payload)
         .retrieve()

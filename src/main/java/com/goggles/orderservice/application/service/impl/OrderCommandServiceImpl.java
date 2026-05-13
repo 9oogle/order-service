@@ -324,22 +324,28 @@ public class OrderCommandServiceImpl implements OrderCommandService {
               userInfo.userId(), enrollmentIds, CancelReason.SYSTEM_ERROR.name()));
     } catch (Exception e) {
       handleCompensationFailure(
-          "LECTURE", enrollmentIds.toString(),
-          userInfo.userId().toString(), userInfo.userEmail(),
-          new OrderFailedEvent(null, userInfo.userId(), userInfo.userEmail(), "강의 예약 보상 트랜잭션 실패", Instant.now()),
+          "LECTURE",
+          enrollmentIds.toString(),
+          userInfo.userId().toString(),
+          userInfo.userEmail(),
+          new OrderFailedEvent(
+              null, userInfo.userId(), userInfo.userEmail(), "강의 예약 보상 트랜잭션 실패", Instant.now()),
           e);
     }
   }
 
-  private void compensateLectureReservation(List<UUID> enrollmentIds, CancelReason reason, Order order) {
+  private void compensateLectureReservation(
+      List<UUID> enrollmentIds, CancelReason reason, Order order) {
     try {
       lectureProvider.rollbackLectureEnrollment(
           new RollbackLectureEnrollmentData(
               order.getOrderer().getStudentId(), enrollmentIds, reason.name()));
     } catch (Exception e) {
       handleCompensationFailure(
-          "LECTURE", enrollmentIds.toString(),
-          order.getOrderer().getStudentId().toString(), order.getOrderer().getStudentEmail(),
+          "LECTURE",
+          enrollmentIds.toString(),
+          order.getOrderer().getStudentId().toString(),
+          order.getOrderer().getStudentEmail(),
           OrderFailedEvent.of(order, "강의 예약 보상 트랜잭션 실패"),
           e);
     }
@@ -352,9 +358,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
               userInfo.userId(), enrollmentId, CancelReason.SYSTEM_ERROR.name()));
     } catch (Exception e) {
       handleCompensationFailure(
-          "MENTORING", enrollmentId.toString(),
-          userInfo.userId().toString(), userInfo.userEmail(),
-          new OrderFailedEvent(null, userInfo.userId(), userInfo.userEmail(), "멘토링 예약 보상 트랜잭션 실패", Instant.now()),
+          "MENTORING",
+          enrollmentId.toString(),
+          userInfo.userId().toString(),
+          userInfo.userEmail(),
+          new OrderFailedEvent(
+              null, userInfo.userId(), userInfo.userEmail(), "멘토링 예약 보상 트랜잭션 실패", Instant.now()),
           e);
     }
   }
@@ -366,23 +375,31 @@ public class OrderCommandServiceImpl implements OrderCommandService {
               order.getOrderer().getStudentId(), enrollmentId, reason.name()));
     } catch (Exception e) {
       handleCompensationFailure(
-          "MENTORING", enrollmentId.toString(),
-          order.getOrderer().getStudentId().toString(), order.getOrderer().getStudentEmail(),
+          "MENTORING",
+          enrollmentId.toString(),
+          order.getOrderer().getStudentId().toString(),
+          order.getOrderer().getStudentEmail(),
           OrderFailedEvent.of(order, "멘토링 예약 보상 트랜잭션 실패"),
           e);
     }
   }
 
-  private void handleCompensationFailure(String type, String id, String userId, String userEmail, OrderFailedEvent event, Exception e) {
-    String message = String.format(
-        "*🚨 보상 트랜잭션 실패 알림*\n" +
-            "> 타입: `%s`\n" +
-            "> ID: `%s`\n" +
-            "> userId: `%s`\n" +
-            "> 실패 시각: `%s`\n" +
-            "> 예외 메시지: `%s`",
-        type, id, userId, Instant.now(), e.getMessage()
-    );
+  private void handleCompensationFailure(
+      String type,
+      String id,
+      String userId,
+      String userEmail,
+      OrderFailedEvent event,
+      Exception e) {
+    String message =
+        String.format(
+            "*🚨 보상 트랜잭션 실패 알림*\n"
+                + "> 타입: `%s`\n"
+                + "> ID: `%s`\n"
+                + "> userId: `%s`\n"
+                + "> 실패 시각: `%s`\n"
+                + "> 예외 메시지: `%s`",
+            type, id, userId, Instant.now(), e.getMessage());
 
     log.error("보상 트랜잭션 실패. type: {}, id: {}", type, id, e);
     orderEvents.orderFailed(event);
