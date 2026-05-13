@@ -19,6 +19,7 @@ import com.goggles.orderservice.application.dto.external.RollbackMentoringBookin
 import com.goggles.orderservice.application.dto.external.UserInfo;
 import com.goggles.orderservice.application.dto.result.CancelOrderResult;
 import com.goggles.orderservice.application.dto.result.CreateOrderResult;
+import com.goggles.orderservice.application.exception.ExternalServiceException;
 import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
 import com.goggles.orderservice.application.port.out.SlackProvider;
@@ -39,7 +40,6 @@ import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
-import com.goggles.orderservice.application.exception.ExternalServiceException;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
@@ -381,11 +381,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   }
 
   private void handleCompensationFailure(
-      String type,
-      String id,
-      String userId,
-      OrderFailedEvent event,
-      Exception e) {
+      String type, String id, String userId, OrderFailedEvent event, Exception e) {
     String message =
         String.format(
             "*🚨 보상 트랜잭션 실패 알림*\n"

@@ -96,11 +96,13 @@ public class OrderEventsImpl implements OrderEvents {
 
   @Override
   public void orderFailed(OrderFailedEvent event) {
-    String aggregateKey = event.orderId() != null ? event.orderId().toString()
-        : event.customerId() != null ? event.customerId().toString()
-            : UUID.randomUUID().toString();
+    String aggregateKey =
+        event.orderId() != null
+            ? event.orderId().toString()
+            : event.customerId() != null
+                ? event.customerId().toString()
+                : UUID.randomUUID().toString();
 
-    events.trigger(
-        aggregateKey + ":order-failed", DOMAIN, orderTopics.orderFailed(), event);
+    events.trigger(aggregateKey + ":order-failed", DOMAIN, orderTopics.orderFailed(), event);
   }
 }
