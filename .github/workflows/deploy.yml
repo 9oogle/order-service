@@ -247,10 +247,11 @@ jobs:
             fi
 
             # 새 이미지 pull & 재시작
-            COMPOSE_FILE="${{ steps.vars.outputs.compose }}"
+            echo "===== [배포 시작] ====="
             docker compose --env-file $ENV_FILE -f $COMPOSE_FILE pull $SERVICE
             docker compose --env-file $ENV_FILE -f $COMPOSE_FILE up -d $SERVICE
-
+            
+            
             # Health check (30초 간격, 최대 8회)
             echo "Health check 시작... (port: ${{ vars.HEALTH_CHECK_PORT }})"
             for i in $(seq 1 8); do
