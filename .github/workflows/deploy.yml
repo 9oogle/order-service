@@ -236,6 +236,8 @@ jobs:
             upsert_env KAFKA_BOOTSTRAP_SERVERS "${{ secrets.KAFKA_1_INTERNAL_IP }}:9092,${{ secrets.KAFKA_2_INTERNAL_IP }}:9092,${{ secrets.KAFKA_3_INTERNAL_IP }}:9092"
             upsert_env TRUST_STORE_PASSWORD "${{ secrets.TRUST_STORE_PASSWORD }}"
             upsert_env MONITORING_HOST "${{ secrets.MONITORING_VM_HOST }}"
+            upsert_env SLACK_TOKEN "${{ secrets.SLACK_TOKEN }}"
+            upsert_env SLACK_CHANNEL "${{ secrets.SLACK_CHANNEL }}"
 
             # config server는 Eureka 디스커버리로 찾으므로 URI 직접 지정 불필요
             sed -i '/^SPRING_CLOUD_CONFIG_URI=/d' "$ENV_FILE" 2>/dev/null || true
