@@ -155,12 +155,12 @@ jobs:
       - name: Set compose file
         id: vars
         run: |
-          if [ "${{ github.ref_name }}" = "main" ] && [ -f "docker-compose.prod.yml" ]; then
-            echo "compose=docker-compose.prod.yml" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref_name }}" != "main" ] && [ -f "docker-compose.dev.yml" ]; then
-            echo "compose=docker-compose.dev.yml" >> $GITHUB_OUTPUT
+          if [ "${{ github.ref_name }}" = "main" ] && [ -f "deploy/docker-compose.prod.yml" ]; then
+            echo "compose=deploy/docker-compose.prod.yml" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" != "main" ] && [ -f "deploy/docker-compose.dev.yml" ]; then
+            echo "compose=deploy/docker-compose.dev.yml" >> $GITHUB_OUTPUT
           else
-            echo "compose=docker-compose.yml" >> $GITHUB_OUTPUT
+            echo "deploy/compose=docker-compose.yml" >> $GITHUB_OUTPUT
           fi
 
       - name: Copy compose file
@@ -210,7 +210,7 @@ jobs:
             }
 
             upsert_env IMAGE_TAG "$NEW_TAG"
-            upsert_env SPRING_DATASOURCE_URL "jdbc:postgresql://${{ secrets.DB_URL }}/mentoring?currentSchema=mentoring"
+            upsert_env SPRING_DATASOURCE_URL "jdbc:postgresql://${{ secrets.DB_URL }}/order_db?currentSchema=order_db"
             upsert_env DB_USERNAME "${{ secrets.DB_USERNAME }}"
             upsert_env DB_PASSWORD "${{ secrets.DB_PASSWORD }}"
             upsert_env EUREKA_CLIENT_SERVICEURL_DEFAULTZONE "http://${{ secrets.VM_INTERNAL_HOST }}:9001/eureka/"
