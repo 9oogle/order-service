@@ -172,7 +172,6 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           source: "${{ steps.vars.outputs.compose }}"
           target: "${{ vars.APP_DIR }}/${{ vars.SERVICE_NAME }}"
-          strip_components: 1
 
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1
@@ -183,37 +182,45 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             set -e
-            
+
             APP_DIR="${{ vars.APP_DIR }}/${{ vars.SERVICE_NAME }}"
             SERVICE="${{ vars.SERVICE_NAME }}"
             NEW_TAG="${{ github.sha }}"
-            export IMAGE="${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.SERVICE_NAME }}"
-            ENV_FILE="$APP_DIR/.env"
-            
-            COMPOSE_FILENAME=$(basename "${{ steps.vars.outputs.compose }}")
-            COMPOSE_FILE="$APP_DIR/$COMPOSE_FILENAME"
-            
+
+            # 1. 디렉토리 생성 및 이동
             mkdir -p $APP_DIR
             cd $APP_DIR
-            
+
+            # 2. [핵심] deploy 폴더가 생겼을 경우 파일 끌어올리기
+            # scp-action이 deploy/ 폴더째로 복사했을 경우를 대비한 방어 코드입니다.
+            if [ -d "./deploy" ]; then
+              echo "[Path Fix] deploy 폴더가 감지되어 파일을 $APP_DIR 로 이동합니다."
+              mv ./deploy/* ./ 2>/dev/null || true
+              mv ./deploy/.* ./ 2>/dev/null || true  # .env 같은 숨김 파일 포함
+              rmdir ./deploy 2>/dev/null || true
+            fi
+
+            # 3. 경로 변수 재설정 (이제 모든 파일은 APP_DIR 바로 아래에 있음)
+            ENV_FILE="./.env"
+            COMPOSE_FILE="./$(basename "${{ steps.vars.outputs.compose }}")"
+
             echo "===== [경로 디버깅] ====="
-            echo "APP_DIR       : $APP_DIR"
-            echo "ENV_FILE      : $ENV_FILE"
-            echo "COMPOSE_FILE  : $COMPOSE_FILE"
-            echo "compose 파일 존재 여부:"
-            ls -la "$APP_DIR/"
+            echo "현재 위치(PWD): $(pwd)"
+            echo "사용할 ENV_FILE: $ENV_FILE"
+            echo "사용할 COMPOSE_FILE: $COMPOSE_FILE"
+            ls -la
             echo "========================="
 
-            # 롤백용 이전 태그 저장
-            PREV_TAG=$(grep '^IMAGE_TAG=' "$ENV_FILE" 2>/dev/null | cut -d= -f2)
-            if [ -z "$PREV_TAG" ]; then
-              echo "이전 태그 없음 — 초기 배포로 간주, 실패 시 롤백 불가"
-            fi
-            echo "Previous: ${PREV_TAG:-(없음)} → New: $NEW_TAG"
+            # 4. .env 업데이트 및 배포 로직 진행
+            # (이후 기존 upsert_env 및 docker compose 로직 수행)
 
-            # .env 업데이트
+            # 이미지 주소 설정
+            export IMAGE="${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.SERVICE_NAME }}"
+
+            # .env 업데이트 함수 등...
             upsert_env() {
               local KEY="$1" VAL="$2"
+              touch $ENV_FILE # 파일이 없으면 생성
               if grep -q "^${KEY}=" "$ENV_FILE" 2>/dev/null; then
                 sed -i "s|^${KEY}=.*|${KEY}=${VAL}|" "$ENV_FILE"
               else
