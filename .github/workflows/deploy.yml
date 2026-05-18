@@ -172,6 +172,7 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           source: "${{ steps.vars.outputs.compose }}"
           target: "${{ vars.APP_DIR }}/${{ vars.SERVICE_NAME }}"
+          strip_components: 1
 
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1
@@ -182,15 +183,26 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             set -e
-
+            
             APP_DIR="${{ vars.APP_DIR }}/${{ vars.SERVICE_NAME }}"
             SERVICE="${{ vars.SERVICE_NAME }}"
             NEW_TAG="${{ github.sha }}"
             export IMAGE="${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.SERVICE_NAME }}"
             ENV_FILE="$APP_DIR/.env"
-
+            
+            COMPOSE_FILENAME=$(basename "${{ steps.vars.outputs.compose }}")
+            COMPOSE_FILE="$APP_DIR/$COMPOSE_FILENAME"
+            
             mkdir -p $APP_DIR
             cd $APP_DIR
+            
+            echo "===== [경로 디버깅] ====="
+            echo "APP_DIR       : $APP_DIR"
+            echo "ENV_FILE      : $ENV_FILE"
+            echo "COMPOSE_FILE  : $COMPOSE_FILE"
+            echo "compose 파일 존재 여부:"
+            ls -la "$APP_DIR/"
+            echo "========================="
 
             # 롤백용 이전 태그 저장
             PREV_TAG=$(grep '^IMAGE_TAG=' "$ENV_FILE" 2>/dev/null | cut -d= -f2)
