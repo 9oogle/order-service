@@ -7,7 +7,7 @@ import com.goggles.common.util.TimeUtil;
 import com.goggles.orderservice.application.dto.command.CancelOrderPaymentCommand;
 import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.infrastructure.event.PaymentCancelEvent;
-import com.goggles.orderservice.infrastructure.exception.InvalidPaymentEventPayloadException;
+import com.goggles.orderservice.infrastructure.event.exception.InvalidPaymentEventPayloadException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PaymentCancelConsumer {
-  public static final String TOPIC = "payment.canceled";
+  public static final String TOPIC = "payment.canceled.v1";
   public static final String GROUP_NAME = "order-service.payment-canceled";
 
   private final OrderCommandService orderCommandService;

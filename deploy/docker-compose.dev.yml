@@ -1,18 +1,21 @@
 services:
-  ${SERVICE_NAME}:
-    image: asia-northeast3-docker.pkg.dev/melodic-crane-494802-u3/goggles/${SERVICE_NAME}:${IMAGE_TAG:-latest}
-    container_name: goggles-${SERVICE_NAME}
-    restart: unless-stopped
-    ports:
-      - "${SERVICE_PORT}:${SERVICE_PORT}"
-    env_file:
-      - .env
+  order-service:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    env_file: .env
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      SERVER_PORT: "${SERVICE_PORT}"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:${SERVICE_PORT}/actuator/health 2>/dev/null | grep -q UP || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-      start_period: 90s
+    ports:
+      - "9007:9007"
+    volumes:
+      - /home/deploy/ssl/kafka.truststore.jks:/app/ssl/kafka.truststore.jks:ro
+      - order-logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - goggles-network
+
+volumes:
+  order-logs:
+
+networks:
+  goggles-network:
+    external: true

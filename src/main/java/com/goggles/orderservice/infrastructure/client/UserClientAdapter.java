@@ -2,9 +2,9 @@ package com.goggles.orderservice.infrastructure.client;
 
 import com.goggles.common.response.ApiResponse;
 import com.goggles.orderservice.application.dto.external.UserInfo;
+import com.goggles.orderservice.application.exception.ExternalServiceException;
 import com.goggles.orderservice.application.port.out.UserReader;
 import com.goggles.orderservice.infrastructure.client.dto.GetUserInfoResponse;
-import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;

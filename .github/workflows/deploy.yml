@@ -6,7 +6,7 @@ permissions:
 
 on:
   push:
-    branches: [ "dev", "main", "feat/24-refactor-order" ]
+    branches: [ "dev", "main"]
   workflow_dispatch:
 
 env:
@@ -21,10 +21,13 @@ jobs:
         env:
           SECRET_VM_HOST: ${{ secrets.VM_HOST }}
           SECRET_VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+          SECRET_GCP_PROJECT_NUMBER: ${{ secrets.GCP_PROJECT_NUMBER }}
+          SECRET_TRUST_STORE_PASSWORD: ${{ secrets.TRUST_STORE_PASSWORD }}
         run: |
           echo "=== Variables ==="
           echo "GAR_LOCATION     : ${{ vars.GAR_LOCATION }}"
           echo "GCP_PROJECT_ID   : ${{ vars.GCP_PROJECT_ID }}"
+          echo "GCP_SA_EMAIL      : ${{ vars.GCP_SA_EMAIL }}"
           echo "GAR_REPOSITORY   : ${{ vars.GAR_REPOSITORY }}"
           echo "SERVICE_NAME     : ${{ vars.SERVICE_NAME }}"
           echo "VM_USER          : ${{ vars.VM_USER }}"
@@ -33,13 +36,16 @@ jobs:
           echo "HEALTH_CHECK_PORT: ${{ vars.HEALTH_CHECK_PORT }}"
           echo ""
           echo "=== Secrets (존재 여부만 확인) ==="
-          [ -n "$SECRET_VM_HOST"    ] && echo "VM_HOST     : ✅" || echo "VM_HOST     : ❌ 누락"
-          [ -n "$SECRET_VM_SSH_KEY" ] && echo "VM_SSH_KEY  : ✅" || echo "VM_SSH_KEY  : ❌ 누락"
+          [ -n "$SECRET_VM_HOST"             ] && echo "VM_HOST             : ✅" || echo "VM_HOST             : ❌ 누락"
+          [ -n "$SECRET_VM_SSH_KEY"          ] && echo "VM_SSH_KEY          : ✅" || echo "VM_SSH_KEY          : ❌ 누락"
+          [ -n "$SECRET_GCP_PROJECT_NUMBER"  ] && echo "GCP_PROJECT_NUMBER  : ✅" || echo "GCP_PROJECT_NUMBER  : ❌ 누락"
+          [ -n "$SECRET_TRUST_STORE_PASSWORD"] && echo "TRUST_STORE_PASSWORD: ✅" || echo "TRUST_STORE_PASSWORD: ❌ 누락"
           echo ""
 
           MISSING=()
           [ -z "${{ vars.GAR_LOCATION }}"      ] && MISSING+=("vars.GAR_LOCATION")
           [ -z "${{ vars.GCP_PROJECT_ID }}"    ] && MISSING+=("vars.GCP_PROJECT_ID")
+          [ -z "${{ vars.GCP_SA_EMAIL }}"       ] && MISSING+=("vars.GCP_SA_EMAIL")
           [ -z "${{ vars.GAR_REPOSITORY }}"    ] && MISSING+=("vars.GAR_REPOSITORY")
           [ -z "${{ vars.SERVICE_NAME }}"      ] && MISSING+=("vars.SERVICE_NAME")
           [ -z "${{ vars.VM_USER }}"           ] && MISSING+=("vars.VM_USER")
@@ -48,6 +54,8 @@ jobs:
           [ -z "${{ vars.HEALTH_CHECK_PORT }}" ] && MISSING+=("vars.HEALTH_CHECK_PORT")
           [ -z "$SECRET_VM_HOST"               ] && MISSING+=("secrets.VM_HOST")
           [ -z "$SECRET_VM_SSH_KEY"            ] && MISSING+=("secrets.VM_SSH_KEY")
+          [ -z "$SECRET_GCP_PROJECT_NUMBER"    ] && MISSING+=("secrets.GCP_PROJECT_NUMBER")
+          [ -z "$SECRET_TRUST_STORE_PASSWORD"  ] && MISSING+=("secrets.TRUST_STORE_PASSWORD")
 
           if [ ${#MISSING[@]} -gt 0 ]; then
             echo "=== 누락된 변수 ==="
@@ -120,12 +128,15 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/985172684764/locations/global/workloadIdentityPools/github-pool/providers/github-provider-v2
-          service_account: deployManager@melodic-crane-494802-u3.iam.gserviceaccount.com
+          workload_identity_provider: projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider-v2
+          service_account: ${{ vars.GCP_SA_EMAIL }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ vars.GAR_LOCATION }}-docker.pkg.dev --quiet
+        run: |
+          gcloud auth configure-docker ${{ vars.GAR_LOCATION }}-docker.pkg.dev --quiet
+
 
       - name: Build and push image
         run: |
@@ -145,9 +156,9 @@ jobs:
         id: vars
         run: |
           if [ "${{ github.ref_name }}" = "main" ] && [ -f "deploy/docker-compose.prod.yml" ]; then
-            echo "compose=docker-compose.prod.yml" >> $GITHUB_OUTPUT
+            echo "compose=deploy/docker-compose.prod.yml" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref_name }}" != "main" ] && [ -f "deploy/docker-compose.dev.yml" ]; then
-            echo "compose=docker-compose.dev.yml" >> $GITHUB_OUTPUT
+            echo "compose=deploy/docker-compose.dev.yml" >> $GITHUB_OUTPUT
           else
             echo "deploy/compose=docker-compose.yml" >> $GITHUB_OUTPUT
           fi
@@ -160,7 +171,7 @@ jobs:
           port: ${{ vars.VM_SSH_PORT }}
           key: ${{ secrets.VM_SSH_KEY }}
           source: "${{ steps.vars.outputs.compose }}"
-          target: "${{ vars.APP_DIR }}"
+          target: "${{ vars.APP_DIR }}/${{ vars.SERVICE_NAME }}"
 
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1
@@ -172,39 +183,77 @@ jobs:
           script: |
             set -e
 
-            APP_DIR="${{ vars.APP_DIR }}"
+            APP_DIR="${{ vars.APP_DIR }}/${{ vars.SERVICE_NAME }}"
             SERVICE="${{ vars.SERVICE_NAME }}"
             NEW_TAG="${{ github.sha }}"
-            export IMAGE="${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.SERVICE_NAME }}"
-            ENV_FILE="$APP_DIR/.env"
 
+            # 1. 디렉토리 생성 및 이동
+            mkdir -p $APP_DIR
             cd $APP_DIR
 
-            # 롤백용 이전 태그 저장
-            PREV_TAG=$(grep '^IMAGE_TAG=' "$ENV_FILE" 2>/dev/null | cut -d= -f2)
-            if [ -z "$PREV_TAG" ]; then
-              echo "이전 태그 없음 — 초기 배포로 간주, 실패 시 롤백 불가"
+            # 2. [핵심] deploy 폴더가 생겼을 경우 파일 끌어올리기
+            # scp-action이 deploy/ 폴더째로 복사했을 경우를 대비한 방어 코드입니다.
+            if [ -d "./deploy" ]; then
+              echo "[Path Fix] deploy 폴더가 감지되어 파일을 $APP_DIR 로 이동합니다."
+              mv ./deploy/* ./ 2>/dev/null || true
+              mv ./deploy/.* ./ 2>/dev/null || true  # .env 같은 숨김 파일 포함
+              rmdir ./deploy 2>/dev/null || true
             fi
-            echo "Previous: ${PREV_TAG:-(없음)} → New: $NEW_TAG"
 
-            # .env 업데이트
+            # 3. 경로 변수 재설정 (이제 모든 파일은 APP_DIR 바로 아래에 있음)
+            ENV_FILE="./.env"
+            COMPOSE_FILE="./$(basename "${{ steps.vars.outputs.compose }}")"
+
+            echo "===== [경로 디버깅] ====="
+            echo "현재 위치(PWD): $(pwd)"
+            echo "사용할 ENV_FILE: $ENV_FILE"
+            echo "사용할 COMPOSE_FILE: $COMPOSE_FILE"
+            ls -la
+            echo "========================="
+
+            # 4. .env 업데이트 및 배포 로직 진행
+            # (이후 기존 upsert_env 및 docker compose 로직 수행)
+
+            # 이미지 주소 설정
+            export IMAGE="${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.SERVICE_NAME }}"
+
+            # .env 업데이트 함수 등...
             upsert_env() {
               local KEY="$1" VAL="$2"
-              sed -i "/^${KEY}=/d" "$ENV_FILE" 2>/dev/null || true
-              printf '%s=%s\n' "$KEY" "$VAL" >> "$ENV_FILE"
+              touch $ENV_FILE # 파일이 없으면 생성
+              if grep -q "^${KEY}=" "$ENV_FILE" 2>/dev/null; then
+                sed -i "s|^${KEY}=.*|${KEY}=${VAL}|" "$ENV_FILE"
+              else
+                echo "${KEY}=${VAL}" >> "$ENV_FILE"
+              fi
             }
 
             upsert_env IMAGE_TAG "$NEW_TAG"
-            upsert_env SPRING_DATASOURCE_URL "${{ secrets.DB_URL }}/${{ vars.DB_SCHEMA }}"
-            upsert_env EUREKA_CLIENT_SERVICEURL_DEFAULTZONE "http://${{ secrets.VM_HOST }}:9001/eureka/"
+            upsert_env SPRING_DATASOURCE_URL "jdbc:postgresql://${{ secrets.DB_URL }}/order_db?currentSchema=order_db"
+            upsert_env DB_USERNAME "${{ secrets.DB_USERNAME }}"
+            upsert_env DB_PASSWORD "${{ secrets.DB_PASSWORD }}"
+            upsert_env EUREKA_CLIENT_SERVICEURL_DEFAULTZONE "http://${{ secrets.VM_INTERNAL_HOST }}:9001/eureka/"
             upsert_env KAFKA_BOOTSTRAP_SERVERS "${{ secrets.KAFKA_1_INTERNAL_IP }}:9092,${{ secrets.KAFKA_2_INTERNAL_IP }}:9092,${{ secrets.KAFKA_3_INTERNAL_IP }}:9092"
+            upsert_env TRUST_STORE_PASSWORD "${{ secrets.TRUST_STORE_PASSWORD }}"
             upsert_env MONITORING_HOST "${{ secrets.MONITORING_VM_HOST }}"
+            upsert_env SLACK_TOKEN "${{ secrets.SLACK_TOKEN }}"
+            upsert_env SLACK_CHANNEL "${{ secrets.SLACK_CHANNEL }}"
+
+            # config server는 Eureka 디스커버리로 찾으므로 URI 직접 지정 불필요
+            sed -i '/^SPRING_CLOUD_CONFIG_URI=/d' "$ENV_FILE" 2>/dev/null || true
+
+            # SSL truststore는 VM 공용 경로에 직접 배치 (/home/deploy/ssl/kafka.truststore.jks)
+            if [ ! -f "/home/deploy/ssl/kafka.truststore.jks" ]; then
+              echo "[SSL] ❌ /home/deploy/ssl/kafka.truststore.jks 파일 없음 — VM에 직접 배치 필요"
+              exit 1
+            fi
 
             # 새 이미지 pull & 재시작
-            COMPOSE_FILE="${{ steps.vars.outputs.compose }}"
-            docker compose -f $COMPOSE_FILE pull $SERVICE
-            docker compose -f $COMPOSE_FILE up -d $SERVICE
-
+            echo "===== [배포 시작] ====="
+            docker compose --env-file $ENV_FILE -f $COMPOSE_FILE pull $SERVICE
+            docker compose --env-file $ENV_FILE -f $COMPOSE_FILE up -d $SERVICE
+            
+            
             # Health check (30초 간격, 최대 8회)
             echo "Health check 시작... (port: ${{ vars.HEALTH_CHECK_PORT }})"
             for i in $(seq 1 8); do

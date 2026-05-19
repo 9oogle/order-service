@@ -6,13 +6,13 @@ import com.goggles.orderservice.application.dto.external.CancelPendingLectureEnr
 import com.goggles.orderservice.application.dto.external.LectureProductReserveData;
 import com.goggles.orderservice.application.dto.external.ProductReserveInfo;
 import com.goggles.orderservice.application.dto.external.RollbackLectureEnrollmentData;
+import com.goggles.orderservice.application.exception.ExternalServiceException;
 import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.infrastructure.client.dto.CancelLectureEnrollmentRequest;
 import com.goggles.orderservice.infrastructure.client.dto.CancelPendingLectureEnrollmentRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveLectureRequest;
 import com.goggles.orderservice.infrastructure.client.dto.ReserveProductResponse;
 import com.goggles.orderservice.infrastructure.client.dto.RollbackLectureEnrollmentRequest;
-import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;

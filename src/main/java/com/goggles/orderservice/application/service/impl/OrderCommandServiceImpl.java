@@ -19,13 +19,16 @@ import com.goggles.orderservice.application.dto.external.RollbackMentoringBookin
 import com.goggles.orderservice.application.dto.external.UserInfo;
 import com.goggles.orderservice.application.dto.result.CancelOrderResult;
 import com.goggles.orderservice.application.dto.result.CreateOrderResult;
+import com.goggles.orderservice.application.exception.ExternalServiceException;
 import com.goggles.orderservice.application.port.out.LectureProvider;
 import com.goggles.orderservice.application.port.out.MentoringProvider;
+import com.goggles.orderservice.application.port.out.SlackProvider;
 import com.goggles.orderservice.application.port.out.UserReader;
 import com.goggles.orderservice.application.service.OrderCommandService;
 import com.goggles.orderservice.domain.event.NotificationOrderCanceledEvent;
 import com.goggles.orderservice.domain.event.NotificationOrderCompletedEvent;
 import com.goggles.orderservice.domain.event.OrderEvents;
+import com.goggles.orderservice.domain.event.OrderFailedEvent;
 import com.goggles.orderservice.domain.exception.InvalidOrderException;
 import com.goggles.orderservice.domain.exception.NotFoundOrderException;
 import com.goggles.orderservice.domain.exception.OrderErrorCode;
@@ -37,8 +40,8 @@ import com.goggles.orderservice.domain.model.OrderItemType;
 import com.goggles.orderservice.domain.model.OrderPrice;
 import com.goggles.orderservice.domain.model.Orderer;
 import com.goggles.orderservice.domain.repository.OrderRepository;
-import com.goggles.orderservice.infrastructure.client.exception.ExternalServiceException;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +57,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
   private final UserReader userReader;
   private final OrderRepository orderRepository;
   private final OrderEvents orderEvents;
+  private final SlackProvider slackProvider;
 
   @Override
   @Transactional
@@ -96,9 +100,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           e.getMessage(),
           e);
       compensateLectureReservation(
-          productInfo.stream().map(ProductReserveInfo::enrollmentId).toList(),
-          userInfo.userId(),
-          CancelReason.SYSTEM_ERROR);
+          productInfo.stream().map(ProductReserveInfo::enrollmentId).toList(), userInfo);
       throw e;
     }
   }
@@ -142,8 +144,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           productInfo.productId(),
           e.getMessage(),
           e);
-      compensateMentoringReservation(
-          productInfo.enrollmentId(), userInfo.userId(), CancelReason.SYSTEM_ERROR);
+      compensateMentoringReservation(productInfo.enrollmentId(), userInfo);
       throw e;
     }
   }
@@ -185,8 +186,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           e);
       compensateLectureReservation(
           order.getItems().stream().map(OrderItem::getEnrollmentId).toList(),
-          order.getOrderer().getStudentId(),
-          CancelReason.SYSTEM_ERROR);
+          CancelReason.SYSTEM_ERROR,
+          order);
       throw e;
     }
   }
@@ -227,9 +228,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
           e.getMessage(),
           e);
       compensateMentoringReservation(
-          order.getItems().getFirst().getEnrollmentId(),
-          order.getOrderer().getStudentId(),
-          CancelReason.SYSTEM_ERROR);
+          order.getItems().getFirst().getEnrollmentId(), CancelReason.SYSTEM_ERROR, order);
       throw e;
     }
   }
@@ -261,14 +260,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
       case LECTURE ->
           compensateLectureReservation(
               order.getItems().stream().map(OrderItem::getEnrollmentId).toList(),
-              order.getOrderer().getStudentId(),
-              CancelReason.PAYMENT_FAIL);
+              CancelReason.PAYMENT_FAIL,
+              order);
 
       case MENTORING ->
           compensateMentoringReservation(
-              order.getItems().getFirst().getEnrollmentId(),
-              order.getOrderer().getStudentId(),
-              CancelReason.PAYMENT_FAIL);
+              order.getItems().getFirst().getEnrollmentId(), CancelReason.PAYMENT_FAIL, order);
     }
   }
 
@@ -320,24 +317,92 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         .orElseThrow(NotFoundOrderException::new);
   }
 
-  private void compensateLectureReservation(
-      List<UUID> enrollmentIds, UUID userId, CancelReason reason) {
+  private void compensateLectureReservation(List<UUID> enrollmentIds, UserInfo userInfo) {
     try {
       lectureProvider.rollbackLectureEnrollment(
-          new RollbackLectureEnrollmentData(userId, enrollmentIds, reason.name()));
+          new RollbackLectureEnrollmentData(
+              userInfo.userId(), enrollmentIds, CancelReason.SYSTEM_ERROR.name()));
     } catch (Exception e) {
-      log.error("강의 예약 보상 트랜잭션 실패. enrollmentIds: {}", enrollmentIds);
-      // todo: DLQ 적용
+      handleCompensationFailure(
+          "LECTURE",
+          enrollmentIds.toString(),
+          userInfo.userId().toString(),
+          new OrderFailedEvent(
+              null, userInfo.userId(), userInfo.userEmail(), "강의 예약 보상 트랜잭션 실패", Instant.now()),
+          e);
     }
   }
 
-  private void compensateMentoringReservation(UUID enrollmentId, UUID userId, CancelReason reason) {
+  private void compensateLectureReservation(
+      List<UUID> enrollmentIds, CancelReason reason, Order order) {
+    try {
+      lectureProvider.rollbackLectureEnrollment(
+          new RollbackLectureEnrollmentData(
+              order.getOrderer().getStudentId(), enrollmentIds, reason.name()));
+    } catch (Exception e) {
+      handleCompensationFailure(
+          "LECTURE",
+          enrollmentIds.toString(),
+          order.getOrderer().getStudentId().toString(),
+          OrderFailedEvent.of(order, "강의 예약 보상 트랜잭션 실패"),
+          e);
+    }
+  }
+
+  private void compensateMentoringReservation(UUID enrollmentId, UserInfo userInfo) {
     try {
       mentoringProvider.rollbackMentoringBooking(
-          new RollbackMentoringBookingData(userId, enrollmentId, reason.name()));
+          new RollbackMentoringBookingData(
+              userInfo.userId(), enrollmentId, CancelReason.SYSTEM_ERROR.name()));
     } catch (Exception e) {
-      log.error("멘토링 예약 보상 트랜잭션 실패. enrollmentId: {}", enrollmentId);
-      // todo: DLQ 적용
+      handleCompensationFailure(
+          "MENTORING",
+          enrollmentId.toString(),
+          userInfo.userId().toString(),
+          new OrderFailedEvent(
+              null, userInfo.userId(), userInfo.userEmail(), "멘토링 예약 보상 트랜잭션 실패", Instant.now()),
+          e);
+    }
+  }
+
+  private void compensateMentoringReservation(UUID enrollmentId, CancelReason reason, Order order) {
+    try {
+      mentoringProvider.rollbackMentoringBooking(
+          new RollbackMentoringBookingData(
+              order.getOrderer().getStudentId(), enrollmentId, reason.name()));
+    } catch (Exception e) {
+      handleCompensationFailure(
+          "MENTORING",
+          enrollmentId.toString(),
+          order.getOrderer().getStudentId().toString(),
+          OrderFailedEvent.of(order, "멘토링 예약 보상 트랜잭션 실패"),
+          e);
+    }
+  }
+
+  private void handleCompensationFailure(
+      String type, String id, String userId, OrderFailedEvent event, Exception e) {
+    String message =
+        String.format(
+            "*🚨 보상 트랜잭션 실패 알림*\n"
+                + "> 타입: `%s`\n"
+                + "> ID: `%s`\n"
+                + "> userId: `%s`\n"
+                + "> 실패 시각: `%s`\n"
+                + "> 예외 메시지: `%s`",
+            type, id, userId, Instant.now(), e.getMessage());
+
+    log.error("보상 트랜잭션 실패. type: {}, id: {}", type, id, e);
+    try {
+      orderEvents.orderFailed(event);
+    } catch (Exception eventEx) {
+      log.error("OrderFailedEvent 발행 실패", eventEx);
+    }
+
+    try {
+      slackProvider.sendAlert(message);
+    } catch (Exception slackEx) {
+      log.error("Slack 알림 전송 실패", slackEx);
     }
   }
 }

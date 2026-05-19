@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record NotificationOrderCanceledEvent(
     UUID orderId,
+    UUID customerId,
     String customerEmail,
     String customerName,
     String orderName,
@@ -16,6 +17,7 @@ public record NotificationOrderCanceledEvent(
   public static NotificationOrderCanceledEvent from(Order order) {
     return new NotificationOrderCanceledEvent(
         order.getId(),
+        order.getOrderer().getStudentId(),
         order.getOrderer().getStudentEmail(),
         order.getOrderer().getStudentName(),
         order.getOrderName(),

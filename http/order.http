@@ -25,7 +25,7 @@ Content-Type: application/json
 {
   "orderId": "{{orderId}}",
   "paymentKey": "test_paymentKey_12345",
-  "amount": 30000,
+  "amount": 260000,
   "approvedAt": "2025-05-09T10:00:00",
   "paymentMethod": "TOSS"
 }
