@@ -1,4 +1,6 @@
 spring:
+  flyway:
+    enabled: false
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     url: jdbc:tc:postgresql:17-alpine:///test_db

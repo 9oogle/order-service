@@ -77,6 +77,8 @@ dependencies {
 
 	// db
 	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.flywaydb:flyway-core'
+	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
 
 	// querydsl
 	implementation "com.querydsl:querydsl-jpa:5.1.0:jakarta"
