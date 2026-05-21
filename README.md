@@ -137,7 +137,7 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 
 ## 🔀 OrderStatus 상태 전이
 
-<img width="1294" height="1216" alt="주문 상태 전이" src="https://github.com/user-attachments/assets/3a3c3edc-0c78-49a1-aa8b-4a4abe02e84d" />
+<img width="500" height="500" alt="주문 상태 전이" src="https://github.com/user-attachments/assets/3a3c3edc-0c78-49a1-aa8b-4a4abe02e84d" />
 
 | 상태 | 설명 | 전이 가능 상태 |
 |---|---|---|
