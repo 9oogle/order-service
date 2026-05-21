@@ -1,4 +1,4 @@
-# 🛒 Order Service — Goggle Edu
+# Order Service — Goggle Edu
 
 > **배움에는 끝이 없다.** 강의부터 멘토링까지, 당신을 위한 완벽한 자격증 통합 교육 플랫폼 **Goggle Edu**의 주문 서비스입니다.
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 📌 서비스 개요
+## 서비스 개요
 
 Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할을 수행하며, 주문 생성·조회·취소 전반을 담당합니다.
 
@@ -18,17 +18,15 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 
 ---
 
-## 🏗️ 전체 인프라 아키텍처
+## 인프라 아키텍처
 
-> **GCP 환경** / VPC 내 Compute Engine 기반 운영
+> GCP 환경 / VPC 내 Compute Engine 기반 운영
 
-<img width="1500" height="700" alt="인프라 아키텍처" src="https://github.com/user-attachments/assets/6f3faf30-1e02-447f-acc2-12eb696008b4" />
+<img width="950" height="500" alt="인프라 아키텍처" src="https://github.com/user-attachments/assets/6f3faf30-1e02-447f-acc2-12eb696008b4" />
 
 ---
 
-## 🔁 주문 처리 상세 흐름
-
-### 주문 생성 플로우
+## 주문 처리 흐름
 
 ```
 주문 생성 요청
@@ -63,7 +61,7 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 
 ---
 
-## 📡 서비스 간 통신 명세
+## 서비스 간 통신 명세
 
 ### Feign Client (동기 호출)
 
@@ -91,11 +89,9 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 | PATCH | `/internal/v1/mentoring-booking/{bookingId}/cancel-pending` | 결제 실패 시 예약 취소 |
 | PATCH | `/internal/v1/mentoring-booking/{bookingId}/cancellation` | 주문 취소 시 예약 취소 |
 
----
-
 ### Kafka 토픽 명세
 
-#### Order Service 발행 토픽
+#### 발행 토픽
 
 | 토픽 | 설명 | 구독 서비스 |
 |---|---|---|
@@ -109,7 +105,7 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 | `order.mentoring-completed.v1` | 멘토링 예약 완료 처리 요청 | Mentoring Service |
 | `order.mentoring-canceled.v1` | 멘토링 예약 취소 처리 요청 | Mentoring Service |
 
-#### Order Service 구독 토픽
+#### 구독 토픽
 
 | 토픽 | 설명 | 발행 서비스 |
 |---|---|---|
@@ -120,7 +116,7 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 
 ---
 
-## 🌐 제공 API
+## 제공 API
 
 > 모든 요청은 API Gateway를 통해 전달되며, `X-User-Id` / `X-User-Role` 헤더가 필요합니다.
 
@@ -135,7 +131,7 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 
 ---
 
-## 🔀 OrderStatus 상태 전이
+## OrderStatus 상태 전이
 
 <img width="500" height="500" alt="주문 상태 전이" src="https://github.com/user-attachments/assets/3a3c3edc-0c78-49a1-aa8b-4a4abe02e84d" />
 
@@ -151,7 +147,7 @@ Order Service는 Goggle Edu MSA 아키텍처에서 **SAGA Orchestrator** 역할�
 
 ---
 
-## 🧱 DDD 패키지 구조
+## DDD 패키지 구조
 
 ```
 goggles/orderservice
@@ -188,7 +184,7 @@ goggles/orderservice
 
 ---
 
-## ⚙️ Resilience4j 설정
+## Resilience4j 설정
 
 | 인스턴스 | Circuit Breaker 정책 | Retry | TimeLimiter |
 |---|---|---|---|
@@ -202,7 +198,7 @@ goggles/orderservice
 
 ---
 
-## 🛠️ 기술 스택
+## 기술 스택
 
 | 분류 | 기술 |
 |---|---|
@@ -226,7 +222,7 @@ goggles/orderservice
 
 ---
 
-## 🚀 실행 방법
+## 실행 방법
 
 ### 사전 요구 사항
 
@@ -241,7 +237,7 @@ GitHubPackagesUsername=<your-github-username>
 GitHubPackagesPassword=<your-github-token>
 ```
 
-### ⚠️ 서비스 실행 순서
+### 서비스 실행 순서
 
 서비스 의존성 순서를 반드시 지켜야 합니다.
 
@@ -258,7 +254,6 @@ GitHubPackagesPassword=<your-github-token>
 ### 로컬 실행
 
 ```bash
-# 환경변수 설정
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=goggles
@@ -268,14 +263,12 @@ export EUREKA_SERVER_URL1=localhost
 export EUREKA_SERVER_URL2=localhost
 export ZIPKIN_ENDPOINT=http://localhost:9411/api/v2/spans
 
-# 빌드 및 실행
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 ### Docker 실행
 
 ```bash
-# .env 파일 작성 후
 docker-compose up -d
 ```
 
@@ -296,7 +289,7 @@ ZIPKIN_ENDPOINT=http://<zipkin-host>:9411/api/v2/spans
 
 ---
 
-## 📊 모니터링
+## 모니터링
 
 | 도구 | 용도 | 접근 |
 |---|---|---|
@@ -312,7 +305,7 @@ ZIPKIN_ENDPOINT=http://<zipkin-host>:9411/api/v2/spans
 
 ---
 
-## 📋 API 문서
+## API 문서
 
 서비스 실행 후 아래 URL에서 Swagger UI를 확인할 수 있습니다.
 
